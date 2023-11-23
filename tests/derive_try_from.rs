@@ -1,9 +1,14 @@
-#[macro_use] extern crate conv;
+#[macro_use]
+extern crate conv;
 
 use conv::{TryFrom, Unrepresentable};
 
 #[derive(Debug, PartialEq)]
-enum Get { Up, Down, AllAround }
+enum Get {
+    Up,
+    Down,
+    AllAround,
+}
 
 TryFrom! { (u8)
     enum Get {
@@ -16,7 +21,11 @@ TryFrom! { (u8)
 }
 
 #[derive(Debug, PartialEq)]
-enum GottaGo { GetAway, Fast = 9000, Faster = 9001 }
+enum GottaGo {
+    GetAway,
+    Fast = 9000,
+    Faster = 9001,
+}
 
 TryFrom! { (u16)
     enum GottaGo {

@@ -71,7 +71,7 @@ This module has **excluded** from semver guarantees.
 */
 #[doc(hidden)]
 pub mod re_export {
-    pub use ::std::result::Result::{self, Ok};
+    pub use std::result::Result::{self, Ok};
 }
 
 /**
@@ -135,7 +135,7 @@ macro_rules! TryFrom {
             "."
         );
     };
-    
+
     (
         @skip_meta $fixed:tt,
         (#[$_attr:meta] $($tail:tt)*) -> $var_names:tt

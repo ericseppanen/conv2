@@ -1,4 +1,5 @@
-#[macro_use] extern crate conv;
+#[macro_use]
+extern crate conv;
 
 use conv::prelude::*;
 
@@ -20,7 +21,11 @@ fn test_into() {
 
 #[test]
 fn test_try() {
-    #[derive(PartialEq, Debug)] enum ItAintRight { BabeNo, NoNo }
+    #[derive(PartialEq, Debug)]
+    enum ItAintRight {
+        BabeNo,
+        NoNo,
+    }
     TryFrom! { (u8) enum ItAintRight { BabeNo, NoNo } }
 
     assert_eq!(0u8.try_as::<ItAintRight>(), Ok(ItAintRight::BabeNo));
@@ -37,6 +42,9 @@ fn test_value() {
 #[test]
 fn test_whizzo() {
     use conv::errors::Unrepresentable;
-    assert_eq!((-1.0f32).approx_as::<u8>().saturate(), Ok::<_, Unrepresentable<_>>(0u8));
+    assert_eq!(
+        (-1.0f32).approx_as::<u8>().saturate(),
+        Ok::<_, Unrepresentable<_>>(0u8)
+    );
     assert_eq!((-1i32).value_as::<u8>().saturate().unwrap_ok(), 0u8);
 }

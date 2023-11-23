@@ -222,21 +222,20 @@ fn too_many_errors() -> Result<(), GeneralErrorKind> {
 */
 
 #![deny(missing_docs)]
-
 #![cfg_attr(not(feature = "std"), no_std)]
-#[cfg(not(feature = "std"))] extern crate core as std;
+#[cfg(not(feature = "std"))]
+extern crate core as std;
 
-#[macro_use] extern crate custom_derive;
+#[macro_use]
+extern crate custom_derive;
 
 // Exported macros.
 pub mod macros;
 
 pub use errors::{
-    NoError, GeneralError, GeneralErrorKind, Unrepresentable,
-    NegOverflow, PosOverflow,
-    FloatError, RangeError, RangeErrorKind,
-    Saturate,
-    UnwrapOk, UnwrapOrInf, UnwrapOrInvalid, UnwrapOrSaturate,
+    FloatError, GeneralError, GeneralErrorKind, NegOverflow, NoError, PosOverflow, RangeError,
+    RangeErrorKind, Saturate, Unrepresentable, UnwrapOk, UnwrapOrInf, UnwrapOrInvalid,
+    UnwrapOrSaturate,
 };
 
 #[cfg(not(feature = "std"))]
@@ -258,13 +257,9 @@ Usage of the prelude should be considered **unstable**.  Although items will lik
 */
 pub mod prelude {
     pub use super::{
-        ApproxFrom, ApproxInto,
-        ValueFrom, ValueInto,
-        GeneralError, GeneralErrorKind,
-        Saturate,
-        UnwrapOk, UnwrapOrInf, UnwrapOrInvalid, UnwrapOrSaturate,
-        ConvUtil, ConvAsUtil,
-        RoundToNearest, RoundToZero, Wrapping,
+        ApproxFrom, ApproxInto, ConvAsUtil, ConvUtil, GeneralError, GeneralErrorKind,
+        RoundToNearest, RoundToZero, Saturate, UnwrapOk, UnwrapOrInf, UnwrapOrInvalid,
+        UnwrapOrSaturate, ValueFrom, ValueInto, Wrapping,
     };
 }
 
@@ -308,7 +303,10 @@ The major reason for this formulation is to exactly define what happens when con
 
 With this formulation, it is well-defined: if a floating point value is outside the representable range, the conversion fails.  This allows users to distinguish between approximation and range violation, and act accordingly.
 */
-pub trait ApproxFrom<Src, Scheme=DefaultApprox>: Sized where Scheme: ApproxScheme {
+pub trait ApproxFrom<Src, Scheme = DefaultApprox>: Sized
+where
+    Scheme: ApproxScheme,
+{
     /// The error type produced by a failed conversion.
     type Err: Error;
 
@@ -316,7 +314,10 @@ pub trait ApproxFrom<Src, Scheme=DefaultApprox>: Sized where Scheme: ApproxSchem
     fn approx_from(src: Src) -> Result<Self, Self::Err>;
 }
 
-impl<Src, Scheme> ApproxFrom<Src, Scheme> for Src where Scheme: ApproxScheme {
+impl<Src, Scheme> ApproxFrom<Src, Scheme> for Src
+where
+    Scheme: ApproxScheme,
+{
     type Err = NoError;
     fn approx_from(src: Src) -> Result<Self, Self::Err> {
         Ok(src)
@@ -328,7 +329,10 @@ This is the dual of `ApproxFrom`; see that trait for information.
 
 Where possible, prefer *using* this trait over `ApproxFrom` for generic constraints, but prefer *implementing* `ApproxFrom`.
 */
-pub trait ApproxInto<Dst, Scheme=DefaultApprox> where Scheme: ApproxScheme {
+pub trait ApproxInto<Dst, Scheme = DefaultApprox>
+where
+    Scheme: ApproxScheme,
+{
     /// The error type produced by a failed conversion.
     type Err: Error;
 
@@ -429,7 +433,10 @@ pub trait TryInto<Dst> {
     fn try_into(self) -> Result<Dst, Self::Err>;
 }
 
-impl<Src, Dst> TryInto<Dst> for Src where Dst: TryFrom<Src> {
+impl<Src, Dst> TryInto<Dst> for Src
+where
+    Dst: TryFrom<Src>,
+{
     type Err = Dst::Err;
     fn try_into(self) -> Result<Dst, Self::Err> {
         TryFrom::try_from(self)
@@ -468,12 +475,15 @@ Where possible, prefer *using* this trait over `ValueFrom` for generic constrain
 pub trait ValueInto<Dst> {
     /// The error type produced by a failed conversion.
     type Err: Error;
-    
+
     /// Convert the subject into an exactly equivalent representation.
     fn value_into(self) -> Result<Dst, Self::Err>;
 }
 
-impl<Src, Dst> ValueInto<Dst> for Src where Dst: ValueFrom<Src> {
+impl<Src, Dst> ValueInto<Dst> for Src
+where
+    Dst: ValueFrom<Src>,
+{
     type Err = Dst::Err;
     fn value_into(self) -> Result<Dst, Self::Err> {
         ValueFrom::value_from(self)
@@ -492,7 +502,9 @@ See also the [`ConvAsUtil`](./trait.ConvAsUtil.html) trait.
 pub trait ConvUtil {
     /// Approximate the subject to a given type with the default scheme.
     fn approx_as<Dst>(self) -> Result<Dst, Self::Err>
-    where Self: Sized + ApproxInto<Dst> {
+    where
+        Self: Sized + ApproxInto<Dst>,
+    {
         self.approx_into()
     }
 
@@ -507,19 +519,25 @@ pub trait ConvUtil {
 
     /// Convert the subject to a given type.
     fn into_as<Dst>(self) -> Dst
-    where Self: Sized + Into<Dst> {
+    where
+        Self: Sized + Into<Dst>,
+    {
         self.into()
     }
 
     /// Attempt to convert the subject to a given type.
     fn try_as<Dst>(self) -> Result<Dst, Self::Err>
-    where Self: Sized + TryInto<Dst> {
+    where
+        Self: Sized + TryInto<Dst>,
+    {
         self.try_into()
     }
 
     /// Attempt a value conversion of the subject to a given type.
     fn value_as<Dst>(self) -> Result<Dst, Self::Err>
-    where Self: Sized + ValueInto<Dst> {
+    where
+        Self: Sized + ValueInto<Dst>,
+    {
         self.value_into()
     }
 }
@@ -540,7 +558,9 @@ See also the [`ConvUtil`](./trait.ConvUtil.html) trait.
 pub trait ConvAsUtil<Dst> {
     /// Approximate the subject with the default scheme.
     fn approx(self) -> Result<Dst, Self::Err>
-    where Self: Sized + ApproxInto<Dst> {
+    where
+        Self: Sized + ApproxInto<Dst>,
+    {
         self.approx_into()
     }
 

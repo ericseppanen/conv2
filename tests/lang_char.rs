@@ -1,6 +1,7 @@
 extern crate conv;
 
-#[macro_use] mod util;
+#[macro_use]
+mod util;
 
 use conv::*;
 

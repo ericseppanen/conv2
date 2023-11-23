@@ -3,7 +3,9 @@ macro_rules! SL {
 }
 
 macro_rules! as_expr {
-    ($e:expr) => {$e};
+    ($e:expr) => {
+        $e
+    };
 }
 
 macro_rules! check {

@@ -1,9 +1,13 @@
 macro_rules! max_of {
-    ($name:ident) => { ::std::$name::MAX };
+    ($name:ident) => {
+        ::std::$name::MAX
+    };
 }
 
 macro_rules! min_of {
-    ($name:ident) => { ::std::$name::MIN };
+    ($name:ident) => {
+        ::std::$name::MIN
+    };
 }
 
 macro_rules! approx_blind {
@@ -393,13 +397,15 @@ mod lang_ints {
 
 #[cfg(feature = "std")]
 mod lang_floats {
-    use {ApproxFrom, ApproxScheme};
-    use ValueFrom;
     use errors::{NoError, RangeError};
+    use ValueFrom;
+    use {ApproxFrom, ApproxScheme};
 
     // f32 -> f64: strictly widening
     impl<Scheme> ApproxFrom<f32, Scheme> for f64
-    where Scheme: ApproxScheme {
+    where
+        Scheme: ApproxScheme,
+    {
         type Err = NoError;
         #[inline]
         fn approx_from(src: f32) -> Result<f64, Self::Err> {
@@ -447,9 +453,9 @@ mod lang_int_to_float {
     num_conv! { u64=> nf [, 16_777_216] f32, nf [, 9_007_199_254_740_992] f64 }
 
     num_conv! { isize=> nf [+- 16_777_216] f32,
-        #[32] w f64, #[64] nf [+- 9_007_199_254_740_992] f64 }
+    #[32] w f64, #[64] nf [+- 9_007_199_254_740_992] f64 }
     num_conv! { usize=> nf [, 16_777_216] f32,
-        #[32] w f64, #[64] nf [, 9_007_199_254_740_992] f64 }
+    #[32] w f64, #[64] nf [, 9_007_199_254_740_992] f64 }
 }
 
 #[cfg(feature = "std")]
@@ -460,31 +466,31 @@ mod lang_float_to_int {
     *Yeah.*  That's floating point for you!
     */
     num_conv! { f32=> fan i8, fan i16,
-        fan [-2.1474836e9, 2.1474835e9] i32,
-        fan [-9.223372e18, 9.2233715e18] i64 }
+    fan [-2.1474836e9, 2.1474835e9] i32,
+    fan [-9.223372e18, 9.2233715e18] i64 }
     num_conv! { f32=> fan u8, fan u16,
-        fan [0.0, 4.294967e9] u32,
-        fan [0.0, 1.8446743e19] u64 }
+    fan [0.0, 4.294967e9] u32,
+    fan [0.0, 1.8446743e19] u64 }
     num_conv! { f32=>
-        #[32] fan [-2.1474836e9, 2.1474835e9] isize,
-        #[32] fan [0.0, 4.294967e9] usize,
-        #[64] fan [-9.223372e18, 9.2233715e18] isize,
-        #[64] fan [0.0, 1.8446743e19] usize }
+    #[32] fan [-2.1474836e9, 2.1474835e9] isize,
+    #[32] fan [0.0, 4.294967e9] usize,
+    #[64] fan [-9.223372e18, 9.2233715e18] isize,
+    #[64] fan [0.0, 1.8446743e19] usize }
 
     num_conv! { f64=> fan i8, fan i16, fan i32,
-        fan [-9.223372036854776e18, 9.223372036854775e18] i64 }
+    fan [-9.223372036854776e18, 9.223372036854775e18] i64 }
     num_conv! { f64=> fan u8, fan u16, fan u32,
-        fan [0.0, 1.844674407370955e19] u64 }
+    fan [0.0, 1.844674407370955e19] u64 }
     num_conv! { f64=>
-        #[32] fan isize, #[32] fan usize,
-        #[64] fan [-9.223372036854776e18, 9.223372036854775e18] isize,
-        #[64] fan [0.0, 1.844674407370955e19] usize }
+    #[32] fan isize, #[32] fan usize,
+    #[64] fan [-9.223372036854776e18, 9.223372036854775e18] isize,
+    #[64] fan [0.0, 1.844674407370955e19] usize }
 }
 
 mod lang_char_to_int {
+    use errors::{NoError, PosOverflow};
     use TryFrom;
     use ValueFrom;
-    use errors::{NoError, PosOverflow};
 
     impl TryFrom<char> for u32 {
         type Err = NoError;
@@ -544,9 +550,9 @@ mod lang_char_to_int {
 }
 
 mod lang_int_to_char {
+    use errors::{NoError, Unrepresentable, UnwrapOk};
     use TryFrom;
     use ValueFrom;
-    use errors::{NoError, Unrepresentable, UnwrapOk};
 
     impl TryFrom<u8> for char {
         type Err = NoError;
@@ -559,9 +565,8 @@ mod lang_int_to_char {
         type Err = Unrepresentable<u16>;
         #[inline]
         fn try_from(src: u16) -> Result<char, Self::Err> {
-            TryFrom::try_from(
-                <u32 as ValueFrom<_>>::value_from(src).unwrap_ok()
-            ).map_err(|_| Unrepresentable(src))
+            TryFrom::try_from(<u32 as ValueFrom<_>>::value_from(src).unwrap_ok())
+                .map_err(|_| Unrepresentable(src))
         }
     }
 

@@ -4,10 +4,10 @@ This module defines the various error types that can be produced by a failed con
 In addition, it also defines some extension traits to make working with failable conversions more ergonomic (see the `Unwrap*` traits).
 */
 
+use misc::{InvalidSentinel, Saturated, SignedInfinity};
 use std::any::Any;
-use ::Error;
 use std::fmt::{self, Debug, Display};
-use misc::{Saturated, InvalidSentinel, SignedInfinity};
+use Error;
 
 macro_rules! Desc {
     (
@@ -20,7 +20,10 @@ macro_rules! Desc {
             }
         }
 
-        impl<$t> Error for $name<$t> where $t: Any {
+        impl<$t> Error for $name<$t>
+        where
+            $t: Any,
+        {
             fn description(&self) -> &str {
                 $desc
             }
@@ -57,7 +60,7 @@ macro_rules! DummyDebug {
 
 macro_rules! EnumDesc {
     (
-        ($($vname:ident => $vdesc:expr,)+) 
+        ($($vname:ident => $vdesc:expr,)+)
         pub enum $name:ident $_body:tt
     ) => {
         impl Display for $name {
@@ -75,7 +78,7 @@ macro_rules! EnumDesc {
     };
 
     (
-        ($($vname:ident => $vdesc:expr,)+) 
+        ($($vname:ident => $vdesc:expr,)+)
         pub enum $name:ident<$t:ident> $_body:tt
     ) => {
         impl<$t> Display for $name<$t> {
@@ -224,7 +227,7 @@ macro_rules! IntoInner {
     };
 }
 
-custom_derive!{
+custom_derive! {
     /**
     A general error enumeration that subsumes all other conversion errors.
 
@@ -459,7 +462,9 @@ pub trait Saturate {
 }
 
 impl<T, U> Saturate for Result<T, FloatError<U>>
-where T: Saturated {
+where
+    T: Saturated,
+{
     type Output = Result<T, Unrepresentable<U>>;
 
     #[inline]
@@ -469,13 +474,15 @@ where T: Saturated {
             Ok(v) => Ok(v),
             Err(NegOverflow(_)) => Ok(T::saturated_min()),
             Err(PosOverflow(_)) => Ok(T::saturated_max()),
-            Err(NotANumber(v)) => Err(Unrepresentable(v))
+            Err(NotANumber(v)) => Err(Unrepresentable(v)),
         }
     }
 }
 
 impl<T, U> Saturate for Result<T, RangeError<U>>
-where T: Saturated {
+where
+    T: Saturated,
+{
     type Output = Result<T, NoError>;
 
     #[inline]
@@ -484,13 +491,15 @@ where T: Saturated {
         match self {
             Ok(v) => Ok(v),
             Err(NegOverflow(_)) => Ok(T::saturated_min()),
-            Err(PosOverflow(_)) => Ok(T::saturated_max())
+            Err(PosOverflow(_)) => Ok(T::saturated_max()),
         }
     }
 }
 
 impl<T> Saturate for Result<T, RangeErrorKind>
-where T: Saturated {
+where
+    T: Saturated,
+{
     type Output = Result<T, NoError>;
 
     #[inline]
@@ -499,7 +508,7 @@ where T: Saturated {
         match self {
             Ok(v) => Ok(v),
             Err(NegOverflow) => Ok(T::saturated_min()),
-            Err(PosOverflow) => Ok(T::saturated_max())
+            Err(PosOverflow) => Ok(T::saturated_max()),
         }
     }
 }
@@ -566,7 +575,10 @@ pub trait UnwrapOrSaturate {
 }
 
 impl<T, E> UnwrapOrInf for Result<T, E>
-where T: SignedInfinity, E: Into<RangeErrorKind> {
+where
+    T: SignedInfinity,
+    E: Into<RangeErrorKind>,
+{
     type Output = T;
     #[inline]
     fn unwrap_or_inf(self) -> T {
@@ -580,7 +592,9 @@ where T: SignedInfinity, E: Into<RangeErrorKind> {
 }
 
 impl<T, E> UnwrapOrInvalid for Result<T, E>
-where T: InvalidSentinel {
+where
+    T: InvalidSentinel,
+{
     type Output = T;
     #[inline]
     fn unwrap_or_invalid(self) -> T {
@@ -592,7 +606,10 @@ where T: InvalidSentinel {
 }
 
 impl<T, E> UnwrapOrSaturate for Result<T, E>
-where T: Saturated, E: Into<RangeErrorKind> {
+where
+    T: Saturated,
+    E: Into<RangeErrorKind>,
+{
     type Output = T;
     #[inline]
     fn unwrap_or_saturate(self) -> T {
