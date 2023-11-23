@@ -1,8 +1,8 @@
-/*!
-This module defines the various error types that can be produced by a failed conversion.
-
-In addition, it also defines some extension traits to make working with failable conversions more ergonomic (see the `Unwrap*` traits).
-*/
+//! This module defines the various error types that can be produced by a
+//! failed conversion.
+//!
+//! In addition, it also defines some extension traits to make working with
+//! failable conversions more ergonomic (see the `Unwrap*` traits).
 
 use crate::misc::{InvalidSentinel, Saturated, SignedInfinity};
 use crate::Error;
@@ -228,11 +228,10 @@ macro_rules! IntoInner {
 }
 
 custom_derive! {
-    /**
-    A general error enumeration that subsumes all other conversion errors.
-
-    This exists primarily as a "catch-all" for reliably unifying various different kinds of conversion errors.
-    */
+    /// A general error enumeration that subsumes all other conversion errors.
+    ///
+    /// This exists primarily as a "catch-all" for reliably unifying various
+    /// different kinds of conversion errors.
     #[derive(
         Copy, Clone, Eq, PartialEq, Ord, PartialOrd,
         IntoInner, DummyDebug, FromNoError,
@@ -272,11 +271,11 @@ impl<T> From<FloatError<T>> for GeneralError<T> {
 }
 
 custom_derive! {
-    /**
-    A general error enumeration that subsumes all other conversion errors, but discards all input payloads the errors may be carrying.
-
-    This exists primarily as a "catch-all" for reliably unifying various different kinds of conversion errors, and between different input types.
-    */
+    /// A general error enumeration that subsumes all other conversion errors,
+    /// but discards all input payloads the errors may be carrying.
+    ///
+    /// This exists primarily as a "catch-all" for reliably unifying various
+    /// different kinds of conversion errors, and between different input types.
     #[derive(
         Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug,
         FromNoError,
@@ -317,11 +316,9 @@ impl<T> From<FloatError<T>> for GeneralErrorKind {
     }
 }
 
-/**
-Indicates that it is not possible for the conversion to fail.
-
-You can use the [`UnwrapOk::unwrap_ok`](./trait.UnwrapOk.html#tymethod.unwrap_ok) method to discard the (statically impossible) `Err` case from a `Result<_, NoError>`, without using `Result::unwrap` (which is typically viewed as a "code smell").
-*/
+/// Indicates that it is not possible for the conversion to fail.
+///
+/// You can use the [`UnwrapOk::unwrap_ok`] method to discard the (statically impossible) `Err` case from a `Result<_, NoError>`, without using `Result::unwrap` (which is typically viewed as a "code smell").
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub enum NoError {}
 
@@ -368,9 +365,7 @@ custom_derive! {
 }
 
 custom_derive! {
-    /**
-    Indicates that a conversion from a floating point type failed.
-    */
+    /// Indicates that a conversion from a floating point type failed.
     #[derive(
         Copy, Clone, Eq, PartialEq, Ord, PartialOrd,
         IntoInner, DummyDebug, FromNoError,
@@ -396,9 +391,7 @@ custom_derive! {
 }
 
 custom_derive! {
-    /**
-    Indicates that a conversion failed due to a range error.
-    */
+    /// Indicates that a conversion failed due to a range error.
     #[derive(
         Copy, Clone, Eq, PartialEq, Ord, PartialOrd,
         IntoInner, DummyDebug, FromNoError,
@@ -419,11 +412,12 @@ custom_derive! {
 }
 
 custom_derive! {
-    /**
-    Indicates that a conversion failed due to a range error.
-
-    This is a variant of `RangeError` that does not retain the input value which caused the error.  It exists to help unify some utility methods and should not generally be used directly, unless you are targeting the `Unwrap*` traits.
-    */
+    /// Indicates that a conversion failed due to a range error.
+    ///
+    /// This is a variant of `RangeError` that does not retain the input value
+    /// which caused the error. It exists to help unify some utility methods
+    /// and should not generally be used directly, unless you are targeting the
+    /// `Unwrap*` traits.
     #[derive(
         Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug,
         FromNoError,
@@ -444,20 +438,18 @@ custom_derive! {
     }
 }
 
-/**
-Saturates a `Result`.
-*/
+/// Saturates a `Result`.
 pub trait Saturate {
     /// The result of saturating.
     type Output;
 
-    /**
-    Replaces an overflow error with a saturated value.
-
-    Unlike `unwrap_or_saturate`, this method can be used in cases where the `Result` error type can encode failures *other* than overflow and underflow.  For example, you cannot saturate a float-to-integer conversion using `unwrap_or_saturate` as the error might be `NotANumber`, which doesn't have a meaningful saturation "direction".
-
-    The output of this method will be a `Result` where the error type *does not* contain overflow conditions.  What conditions remain must still be dealt with in some fashion.
-    */
+    /// Replaces an overflow error with a saturated value.
+    ///
+    /// Unlike `unwrap_or_saturate`, this method can be used in cases where the
+    /// `Result` error type can encode failures *other* than overflow and
+    /// underflow. For example, you cannot saturate a float-to-integer conversion using `unwrap_or_saturate` as the error might be `NotANumber`, which doesn't have a meaningful saturation "direction".
+    ///
+    /// The output of this method will be a `Result` where the error type *does not* contain overflow conditions. What conditions remain must still be dealt with in some fashion.
     fn saturate(self) -> Self::Output;
 }
 
@@ -513,15 +505,12 @@ where
     }
 }
 
-/**
-Safely unwrap a `Result` that cannot contain an error.
-*/
+/// Safely unwrap a `Result` that cannot contain an error.
 pub trait UnwrapOk<T> {
-    /**
-    Unwraps a `Result` without possibility of failing.
-
-    Technically, this is not necessary; it's provided simply to make user code a little clearer.
-    */
+    /// Unwraps a `Result` without possibility of failing.
+    ///
+    /// Technically, this is not necessary; it's provided simply to make user
+    /// code a little clearer.
     fn unwrap_ok(self) -> T;
 }
 
@@ -535,42 +524,33 @@ impl<T> UnwrapOk<T> for Result<T, NoError> {
     }
 }
 
-/**
-Unwrap a conversion by saturating to infinity.
-*/
+/// Unwrap a conversion by saturating to infinity.
 pub trait UnwrapOrInf {
     /// The result of unwrapping.
     type Output;
 
-    /**
-    Either unwraps the successfully converted value, or saturates to infinity in the "direction" of overflow.
-    */
+    /// Either unwraps the successfully converted value, or saturates to
+    /// infinity in the "direction" of overflow.
     fn unwrap_or_inf(self) -> Self::Output;
 }
 
-/**
-Unwrap a conversion by replacing a failure with an invalid sentinel value.
-*/
+/// Unwrap a conversion by replacing a failure with an invalid sentinel value.
 pub trait UnwrapOrInvalid {
     /// The result of unwrapping.
     type Output;
 
-    /**
-    Either unwraps the successfully converted value, or returns the output type's invalid sentinel value.
-    */
+    /// Either unwraps the successfully converted value, or returns the output
+    /// type's invalid sentinel value.
     fn unwrap_or_invalid(self) -> Self::Output;
 }
 
-/**
-Unwrap a conversion by saturating.
-*/
+/// Unwrap a conversion by saturating.
 pub trait UnwrapOrSaturate {
     /// The result of unwrapping.
     type Output;
 
-    /**
-    Either unwraps the successfully converted value, or saturates in the "direction" of overflow.
-    */
+    /// Either unwraps the successfully converted value, or saturates in the
+    /// "direction" of overflow.
     fn unwrap_or_saturate(self) -> Self::Output;
 }
 

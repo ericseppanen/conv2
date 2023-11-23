@@ -206,9 +206,7 @@ pub use crate::errors::{
 };
 
 #[cfg(not(feature = "std"))]
-/**
-A conversion error. Corresponds to std::error:Error.
-*/
+/// A conversion error. Corresponds to std::error:Error.
 pub trait Error: core::fmt::Debug + core::fmt::Display + core::any::Any {
     /// A short description of the error
     fn description(&self) -> &str;
@@ -217,13 +215,11 @@ pub trait Error: core::fmt::Debug + core::fmt::Display + core::any::Any {
 #[cfg(feature = "std")]
 pub use std::error::Error;
 
-/**
-Publicly re-exports the most generally useful set of items.
-
-Usage of the prelude should be considered **unstable**. Although items will
-likely *not* be removed without bumping the major version, new items *may* be
-added, which could potentially cause name conflicts in user code.
-*/
+/// Publicly re-exports the most generally useful set of items.
+///
+/// Usage of the prelude should be considered **unstable**. Although items will
+/// likely *not* be removed without bumping the major version, new items *may*
+/// be added, which could potentially cause name conflicts in user code.
 pub mod prelude {
     pub use super::{
         ApproxFrom, ApproxInto, ConvAsUtil, ConvUtil, GeneralError, GeneralErrorKind,

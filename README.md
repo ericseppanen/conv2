@@ -3,7 +3,7 @@
 
 This crate provides a number of conversion traits with more specific semantics than those provided by `as` or `From`/`Into`.
 
-The goal with the traits provided here is to be more specific about what generic code can rely on, as well as provide reasonably self-describing alternatives to the standard `From`/`Into` traits.  For example, the although `T: From<U>` might be satisfied in generic code, this says nothing about what *kind* of conversion that represents.
+The goal with the traits provided here is to be more specific about what generic code can rely on, as well as provide reasonably self-describing alternatives to the standard `From`/`Into` traits. For example, the although `T: From<U>` might be satisfied in generic code, this says nothing about what *kind* of conversion that represents.
 
 In addition, `From`/`Into` provide no facility for a conversion failing, meaning that implementations may need to choose between conversions that may not be valid, or panicking; neither option is appealing in general.
 
@@ -26,7 +26,7 @@ In addition, `From`/`Into` provide no facility for a conversion failing, meaning
 // This *cannot* fail, so we can use `unwrap_ok` to discard the `Result`.
 assert_eq!(u8::value_from(0u8).unwrap_ok(), 0u8);
 
-// This *can* fail.  Specifically, it can overflow toward negative infinity.
+// This *can* fail. Specifically, it can overflow toward negative infinity.
 assert_eq!(u8::value_from(0i8),     Ok(0u8));
 assert_eq!(u8::value_from(-1i8),    Err(NegOverflow(-1)));
 
@@ -63,7 +63,7 @@ assert_eq!(400u16.approx_as_by::<u8, Wrapping>(), Ok(144));
 assert_eq!(f32::value_from(16_777_216i32), Ok(16_777_216.0f32));
 assert_eq!(f32::value_from(16_777_217i32), Err(RangeError::PosOverflow(16_777_217)));
 
-// Float -> integer conversions have to be done using approximations.  Although
+// Float -> integer conversions have to be done using approximations. Although
 // exact conversions are *possible*, "advertising" this with an implementation
 // is misleading.
 //
@@ -79,7 +79,7 @@ assert_eq!(255.0f32.approx(), Ok(255u8));
 assert_eq!(256.0f32.approx(), Err::<u8, _>(FloatError::PosOverflow(256.0)));
 
 // Sometimes, it can be useful to saturate the conversion from float to
-// integer directly, then account for NaN as input separately.  The `Saturate`
+// integer directly, then account for NaN as input separately. The `Saturate`
 // extension trait exists for this reason.
 assert_eq!((-23.0f32).approx_as::<u8>().saturate(), Ok(0));
 assert_eq!(302.0f32.approx_as::<u8>().saturate(), Ok(255u8));
@@ -113,8 +113,8 @@ fn too_many_errors() -> Result<(), GeneralErrorKind> {
 
 ### v0.3.0
 
-- Added an `Error` constraint to all `Err` associated types.  This will break any user-defined conversions where the `Err` type does not implement `Error`.
-- Renamed the `Overflow` and `Underflow` errors to `PosOverflow` and `NegOverflow` respectively.  In the context of floating point conversions, "underflow" usually means the value was too close to zero to correctly represent.
+- Added an `Error` constraint to all `Err` associated types. This will break any user-defined conversions where the `Err` type does not implement `Error`.
+- Renamed the `Overflow` and `Underflow` errors to `PosOverflow` and `NegOverflow` respectively. In the context of floating point conversions, "underflow" usually means the value was too close to zero to correctly represent.
 
 ### v0.2.1
 
@@ -124,6 +124,6 @@ fn too_many_errors() -> Result<(), GeneralErrorKind> {
 
 ### v0.2.0
 
-- Changed all error types to include the original input as payload.  This breaks pretty much *everything*.  Sorry about that.  On the bright side, there's now no downside to using the conversion traits for non-`Copy` types.
+- Changed all error types to include the original input as payload. This breaks pretty much *everything*. Sorry about that. On the bright side, there's now no downside to using the conversion traits for non-`Copy` types.
 - Added the normal rounding modes for float → int approximations: `RoundToNearest`, `RoundToNegInf`, `RoundToPosInf`, and `RoundToZero`.
 - `ApproxWith` is now subsumed by a pair of extension traits (`ConvUtil` and `ConvAsUtil`), that also have shortcuts for `TryInto` and `ValueInto` so that you can specify the destination type on the method.

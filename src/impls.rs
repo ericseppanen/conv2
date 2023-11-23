@@ -460,11 +460,13 @@ mod lang_int_to_float {
 
 #[cfg(feature = "std")]
 mod lang_float_to_int {
-    /*
-    We use explicit ranges on narrowing float-to-int conversions because it *turns out* that just because you can cast an integer to a float, this *does not* mean you can cast it back and get the original input.  The non-explicit-range implementation of `fan` *depends* on this, so it was kinda *totally broken* for narrowing conversions.
-
-    *Yeah.*  That's floating point for you!
-    */
+    // We use explicit ranges on narrowing float-to-int conversions because it
+    // *turns out* that just because you can cast an integer to a float, this
+    // *does not* mean you can cast it back and get the original input. The
+    // non-explicit-range implementation of `fan` *depends* on this, so it was
+    // kinda *totally broken* for narrowing conversions.
+    //
+    // *Yeah.*  That's floating point for you!
     num_conv! { f32=> fan i8, fan i16,
     fan [-2.1474836e9, 2.1474835e9] i32,
     fan [-9.223372e18, 9.2233715e18] i64 }
