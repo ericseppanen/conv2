@@ -1,10 +1,7 @@
-// cargo-deps: ieee754="0.2.1"
-/*!
-Experimentally derives, for each (int, float) pair, the largest and smallest integer values that survive round-tripping through the float types.
+//! Experimentally derives, for each (int, float) pair, the largest and smallest integer values that survive round-tripping through the float types.
+//!
+//! This is to verify *exactly* what the safe range for float-to-int conversions is.
 
-This is to verify *exactly* what the safe range for float-to-int conversions is.
-*/
-extern crate ieee754;
 use std::fmt;
 use ieee754::Ieee754;
 

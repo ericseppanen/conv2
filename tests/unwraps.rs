@@ -1,10 +1,7 @@
-#![cfg(feature = "std")]
-extern crate conv;
-
 #[macro_use]
 mod util;
 
-use conv::*;
+use conv2::*;
 
 macro_rules! cty {
     ($e:expr, $t:ty) => {{

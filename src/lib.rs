@@ -195,9 +195,6 @@
 //! ```
 
 #![deny(missing_docs)]
-#![cfg_attr(not(feature = "std"), no_std)]
-#[cfg(not(feature = "std"))]
-extern crate core as std;
 
 #[macro_use]
 extern crate custom_derive;

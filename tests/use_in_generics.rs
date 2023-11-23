@@ -1,7 +1,6 @@
 //! Are conversions easily usable in generic code?
-extern crate conv;
 
-use conv::prelude::*;
+use conv2::prelude::*;
 
 #[test]
 fn test_generic_unwrap() {

@@ -1,13 +1,10 @@
-#![cfg(feature = "std")]
-extern crate conv;
-
 #[macro_use]
 mod util;
 
-use conv::*;
+use conv2::*;
 
-use conv::FloatError::NegOverflow as FU;
-use conv::FloatError::PosOverflow as FO;
+use conv2::FloatError::NegOverflow as FU;
+use conv2::FloatError::PosOverflow as FO;
 
 #[test]
 fn test_f32() {

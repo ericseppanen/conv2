@@ -1,12 +1,12 @@
 macro_rules! max_of {
     ($name:ident) => {
-        ::std::$name::MAX
+        ::core::$name::MAX
     };
 }
 
 macro_rules! min_of {
     ($name:ident) => {
-        ::std::$name::MIN
+        ::core::$name::MIN
     };
 }
 
@@ -429,10 +429,10 @@ mod lang_floats {
             if !src.is_finite() {
                 return Ok(src as f32);
             }
-            if !(::std::f32::MIN as f64 <= src) {
+            if !(::core::f32::MIN as f64 <= src) {
                 return Err(RangeError::NegOverflow(src));
             }
-            if !(src <= ::std::f32::MAX as f64) {
+            if !(src <= ::core::f32::MAX as f64) {
                 return Err(RangeError::PosOverflow(src));
             }
             Ok(src as f32)

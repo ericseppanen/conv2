@@ -1,14 +1,12 @@
-extern crate conv;
-
 #[macro_use]
 mod util;
 
-use conv::*;
+use conv2::*;
 
-use conv::NegOverflow as Uf;
-use conv::PosOverflow as Of;
-use conv::RangeError::NegOverflow as RU;
-use conv::RangeError::PosOverflow as RO;
+use conv2::NegOverflow as Uf;
+use conv2::PosOverflow as Of;
+use conv2::RangeError::NegOverflow as RU;
+use conv2::RangeError::PosOverflow as RO;
 
 #[test]
 fn test_i8() {

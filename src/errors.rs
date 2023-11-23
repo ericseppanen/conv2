@@ -6,8 +6,8 @@ In addition, it also defines some extension traits to make working with failable
 
 use crate::misc::{InvalidSentinel, Saturated, SignedInfinity};
 use crate::Error;
-use std::any::Any;
-use std::fmt::{self, Debug, Display};
+use core::any::Any;
+use core::fmt::{self, Debug, Display};
 
 macro_rules! Desc {
     (

@@ -1,11 +1,9 @@
-extern crate conv;
-
-use conv::prelude::*;
+use conv2::prelude::*;
 
 #[cfg(feature = "std")]
 #[test]
 fn test_approx() {
-    use conv::DefaultApprox;
+    use conv2::DefaultApprox;
     assert_eq!((1.5f32).approx(), Ok(1i32));
     assert_eq!((1.5f32).approx_by::<DefaultApprox>(), Ok(1));
     assert_eq!((1.5f32).approx_as::<i32>(), Ok(1));
@@ -26,7 +24,7 @@ fn test_value() {
 #[cfg(feature = "std")]
 #[test]
 fn test_whizzo() {
-    use conv::errors::Unrepresentable;
+    use conv2::errors::Unrepresentable;
     assert_eq!(
         (-1.0f32).approx_as::<u8>().saturate(),
         Ok::<_, Unrepresentable<_>>(0u8)

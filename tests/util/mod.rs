@@ -168,11 +168,11 @@ macro_rules! check {
             println!("? {} => {}, qv: (+- {})", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.value_into().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
                 if !(-$bound as $from <= v) {
-                    dst == Err(conv::FloatError::NegOverflow(v))
+                    dst == Err(conv2::FloatError::NegOverflow(v))
                 } else if !(v <= $bound as $from) {
-                    dst == Err(conv::FloatError::PosOverflow(v))
+                    dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -193,9 +193,9 @@ macro_rules! check {
             println!("? {} => {}, qv: (, {})", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.value_into().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
                 if !(v <= $bound as $from) {
-                    dst == Err(conv::FloatError::PosOverflow(v))
+                    dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -216,9 +216,9 @@ macro_rules! check {
             println!("? {} => {}, qv: +", SL!($from), SL!($to));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.value_into().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
                 if !(0 <= v) {
-                    dst == Err(conv::FloatError::NegOverflow(v))
+                    dst == Err(conv2::FloatError::NegOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -239,9 +239,9 @@ macro_rules! check {
             println!("? {} => {}, qv: +{}", SL!($from), SL!($to), SL!($max));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.value_into().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
                 if !(v <= <$max>::max_value() as $from) {
-                    dst == Err(conv::FloatError::PosOverflow(v))
+                    dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -262,11 +262,11 @@ macro_rules! check {
             println!("? {} => {}, qv: {}", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.value_into().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
                 if !(<$bound>::min_value() as $from <= v) {
-                    dst == Err(conv::FloatError::NegOverflow(v))
+                    dst == Err(conv2::FloatError::NegOverflow(v))
                 } else if !(v <= <$bound>::max_value() as $from) {
-                    dst == Err(conv::FloatError::PosOverflow(v))
+                    dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -287,11 +287,11 @@ macro_rules! check {
             println!("? {} => {}, qv: {}, {}", SL!($from), SL!($to), SL!($min), SL!($max));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.value_into().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
                 if !(<$min>::min_value() as $from <= v) {
-                    dst == Err(conv::FloatError::NegOverflow(v))
+                    dst == Err(conv2::FloatError::NegOverflow(v))
                 } else if !(v <= <$max>::max_value() as $from) {
-                    dst == Err(conv::FloatError::PosOverflow(v))
+                    dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -361,9 +361,9 @@ macro_rules! check {
             println!("? {} => {}, qa: +", SL!($from), SL!($to));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.approx_as().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
                 if !(0 <= v) {
-                    dst == Err(conv::FloatError::NegOverflow(v))
+                    dst == Err(conv2::FloatError::NegOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -384,9 +384,9 @@ macro_rules! check {
             println!("? {} => {}, qa: +{}", SL!($from), SL!($to), SL!($max));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.approx_as().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
                 if !(v <= <$max>::max_value() as $from) {
-                    dst == Err(conv::FloatError::PosOverflow(v))
+                    dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -407,11 +407,11 @@ macro_rules! check {
             println!("? {} => {}, qa: {}", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
-                let dst: Result<$to, conv::FloatError<_>> = v.approx_as().map_err(From::from);
+                let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
                 if !(<$bound>::min_value() as $from <= v) {
-                    dst == Err(conv::FloatError::NegOverflow(v))
+                    dst == Err(conv2::FloatError::NegOverflow(v))
                 } else if !(v <= <$bound>::max_value() as $from) {
-                    dst == Err(conv::FloatError::PosOverflow(v))
+                    dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
                 }
@@ -449,7 +449,7 @@ macro_rules! check {
         {
             println!("? {} => {}, aRTN: {}, {}", SL!($from), SL!($to), SL!($src), SL!($dst));
             let src: $from = $src;
-            let dst: Result<$to, _> = src.approx_by::<conv::RoundToNearest>();
+            let dst: Result<$to, _> = src.approx_by::<conv2::RoundToNearest>();
             assert_eq!(dst, Ok($dst));
         }
         check!(@ $from, $to=> $($tail)*);
@@ -459,7 +459,7 @@ macro_rules! check {
         {
             println!("? {} => {}, aRNI: {}, {}", SL!($from), SL!($to), SL!($src), SL!($dst));
             let src: $from = $src;
-            let dst: Result<$to, _> = src.approx_by::<conv::RoundToNegInf>();
+            let dst: Result<$to, _> = src.approx_by::<conv2::RoundToNegInf>();
             assert_eq!(dst, Ok($dst));
         }
         check!(@ $from, $to=> $($tail)*);
@@ -469,7 +469,7 @@ macro_rules! check {
         {
             println!("? {} => {}, aRPI: {}, {}", SL!($from), SL!($to), SL!($src), SL!($dst));
             let src: $from = $src;
-            let dst: Result<$to, _> = src.approx_by::<conv::RoundToPosInf>();
+            let dst: Result<$to, _> = src.approx_by::<conv2::RoundToPosInf>();
             assert_eq!(dst, Ok($dst));
         }
         check!(@ $from, $to=> $($tail)*);
@@ -479,7 +479,7 @@ macro_rules! check {
         {
             println!("? {} => {}, aRTZ: {}, {}", SL!($from), SL!($to), SL!($src), SL!($dst));
             let src: $from = $src;
-            let dst: Result<$to, _> = src.approx_by::<conv::RoundToZero>();
+            let dst: Result<$to, _> = src.approx_by::<conv2::RoundToZero>();
             assert_eq!(dst, Ok($dst));
         }
         check!(@ $from, $to=> $($tail)*);

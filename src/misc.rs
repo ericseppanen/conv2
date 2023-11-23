@@ -19,8 +19,8 @@ item_for_each! {
     (i8), (i16), (i32), (i64), (u8), (u16), (u32), (u64), (isize), (usize) => {
         ($ity:ident) => {
             impl Saturated for $ity {
-                #[inline] fn saturated_max() -> Self { ::std::$ity::MAX }
-                #[inline] fn saturated_min() -> Self { ::std::$ity::MIN }
+                #[inline] fn saturated_max() -> Self { ::core::$ity::MAX }
+                #[inline] fn saturated_min() -> Self { ::core::$ity::MIN }
             }
         };
     }
@@ -41,7 +41,7 @@ item_for_each! {
     (f32), (f64) => {
         ($ity:ident) => {
             impl InvalidSentinel for $ity {
-                #[inline] fn invalid_sentinel() -> Self { ::std::$ity::NAN }
+                #[inline] fn invalid_sentinel() -> Self { ::core::$ity::NAN }
             }
         };
     }
@@ -65,8 +65,8 @@ item_for_each! {
     (f32), (f64) => {
         ($ity:ident) => {
             impl SignedInfinity for $ity {
-                #[inline] fn neg_infinity() -> Self { ::std::$ity::NEG_INFINITY }
-                #[inline] fn pos_infinity() -> Self { ::std::$ity::INFINITY }
+                #[inline] fn neg_infinity() -> Self { ::core::$ity::NEG_INFINITY }
+                #[inline] fn pos_infinity() -> Self { ::core::$ity::INFINITY }
             }
         };
     }
