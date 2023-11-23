@@ -8,6 +8,7 @@ readme = "README.md"
 license = "MIT"
 keywords = ["from", "into", "conversion", "approximation"]
 edition = "2021"
+rust-version = "1.56"
 
 exclude = [
     "scripts/*",

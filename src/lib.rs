@@ -17,7 +17,7 @@
 //!
 //! ## Compatibility
 //!
-//! `conv2` is compatible with Rust XXXX and higher.
+//! `conv2` is compatible with Rust 1.56 and higher.
 //!
 //! # Overview
 //!
