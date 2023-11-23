@@ -89,8 +89,8 @@
 //! Because there are *numerous* error types, the `GeneralError` enum is
 //! provided. `From<E, T> for GeneralError<T>` exists for each error type
 //! `E<T>` defined by this crate (even for `NoError`!), allowing errors to be
-//! translated automatically by `try!`. In fact, all errors can be "expanded"
-//! to *all* more general forms (*e.g.* `NoError` → `NegOverflow`,
+//! translated automatically by the `?` operator. In fact, all errors can be
+//! "expanded" to *all* more general forms (*e.g.* `NoError` → `NegOverflow`,
 //! `PosOverflow` → `RangeError` → `FloatError`).
 //!
 //! Aside from `NoError`, the various error types wrap the input value that you
@@ -113,9 +113,8 @@
 //! # Examples
 //!
 //! ```
-//! # extern crate conv;
 //! # use conv::*;
-//! # fn main() {
+//!
 //! // This *cannot* fail, so we can use `unwrap_ok` to discard the `Result`.
 //! assert_eq!(u8::value_from(0u8).unwrap_ok(), 0u8);
 //!
@@ -150,7 +149,6 @@
 //! assert_eq!(400u16.approx_as::<u8>(),              Err(PosOverflow(400)));
 //! assert_eq!(400u16.approx_as_by::<u8, Wrapping>(), Ok(144));
 //!
-//! # #[cfg(feature = "std")] fn std_0() {
 //! // Integer -> float conversions *can* fail due to limited precision.
 //! // Once the continuous range of exactly representable integers is exceeded, the
 //! // provided implementations fail with overflow errors.
@@ -178,28 +176,22 @@
 //! assert_eq!((-23.0f32).approx_as::<u8>().saturate(), Ok(0));
 //! assert_eq!(302.0f32.approx_as::<u8>().saturate(), Ok(255u8));
 //! assert!(std::f32::NAN.approx_as::<u8>().saturate().is_err());
-//! # }
-//! # #[cfg(not(feature = "std"))] fn std_0() {}
-//! # std_0();
 //!
 //! // If you really don't care about the specific kind of error, you can just rely
 //! // on automatic conversion to `GeneralErrorKind`.
 //! fn too_many_errors() -> Result<(), GeneralErrorKind> {
-//!     assert_eq!({let r: u8 = try!(0u8.value_into()); r},  0u8);
-//!     assert_eq!({let r: u8 = try!(0i8.value_into()); r},  0u8);
-//!     assert_eq!({let r: u8 = try!(0i16.value_into()); r}, 0u8);
-//!     # #[cfg(feature = "std")] fn std_1() -> Result<(), GeneralErrorKind> {
-//!     assert_eq!({let r: u8 = try!(0.0f32.approx()); r},   0u8);
-//!     # Ok(())
-//!     # }
-//!     # #[cfg(not(feature = "std"))] fn std_1() -> Result<(), GeneralErrorKind> {
-//!     # Ok(())
-//!     # }
-//!     # try!(std_1());
+//!     let x: u8 = 0u8.value_into()?;
+//!     assert_eq!(x, 0);
+//!     let y: i8 = 0u8.value_into()?;
+//!     assert_eq!(y, 0);
+//!     let z: i16 = 0u8.value_into()?;
+//!     assert_eq!(z, 0);
+//!
+//!     let x: u8 = 0.0f32.approx()?;
+//!     assert_eq!(x, 0u8);
 //!     Ok(())
 //! }
-//! # let _ = too_many_errors();
-//! # }
+//! too_many_errors().unwrap();
 //! ```
 
 #![deny(missing_docs)]
