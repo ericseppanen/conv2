@@ -229,9 +229,6 @@ extern crate core as std;
 #[macro_use]
 extern crate custom_derive;
 
-// Exported macros.
-pub mod macros;
-
 pub use crate::errors::{
     FloatError, GeneralError, GeneralErrorKind, NegOverflow, NoError, PosOverflow, RangeError,
     RangeErrorKind, Saturate, Unrepresentable, UnwrapOk, UnwrapOrInf, UnwrapOrInvalid,
@@ -397,53 +394,6 @@ pub enum RoundToZero {}
 impl ApproxScheme for RoundToZero {}
 
 /**
-This trait is used to perform a conversion between different semantic types which might fail.
-
-Where possible, prefer *implementing* this trait over `TryInto`, but prefer *using* `TryInto` for generic constraints.
-
-# Details
-
-Typically, this should be used in cases where you are converting between values whose ranges and/or representations only partially overlap.  That the conversion may fail should be a reasonably expected outcome.  A standard example of this is converting from integers to enums of unitary variants.
-*/
-pub trait TryFrom<Src>: Sized {
-    /// The error type produced by a failed conversion.
-    type Err: Error;
-
-    /// Convert the given value into the subject type.
-    fn try_from(src: Src) -> Result<Self, Self::Err>;
-}
-
-impl<Src> TryFrom<Src> for Src {
-    type Err = NoError;
-    fn try_from(src: Src) -> Result<Self, Self::Err> {
-        Ok(src)
-    }
-}
-
-/**
-This is the dual of `TryFrom`; see that trait for information.
-
-Where possible, prefer *using* this trait over `TryFrom` for generic constraints, but prefer *implementing* `TryFrom`.
-*/
-pub trait TryInto<Dst> {
-    /// The error type produced by a failed conversion.
-    type Err: Error;
-
-    /// Convert the subject into the destination type.
-    fn try_into(self) -> Result<Dst, Self::Err>;
-}
-
-impl<Src, Dst> TryInto<Dst> for Src
-where
-    Dst: TryFrom<Src>,
-{
-    type Err = Dst::Err;
-    fn try_into(self) -> Result<Dst, Self::Err> {
-        TryFrom::try_from(self)
-    }
-}
-
-/**
 This trait is used to perform an exact, value-preserving conversion.
 
 Where possible, prefer *implementing* this trait over `ValueInto`, but prefer *using* `ValueInto` for generic constraints.
@@ -526,7 +476,7 @@ pub trait ConvUtil {
     }
 
     /// Attempt to convert the subject to a given type.
-    fn try_as<Dst>(self) -> Result<Dst, Self::Err>
+    fn try_as<Dst>(self) -> Result<Dst, Self::Error>
     where
         Self: Sized + TryInto<Dst>,
     {

@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate conv;
 
 use conv::prelude::*;
@@ -17,20 +16,6 @@ fn test_approx() {
 fn test_into() {
     let v = "ABC".into_as::<Vec<u8>>();
     assert_eq!(&*v, &[0x41, 0x42, 0x43]);
-}
-
-#[test]
-fn test_try() {
-    #[derive(PartialEq, Debug)]
-    enum ItAintRight {
-        BabeNo,
-        NoNo,
-    }
-    TryFrom! { (u8) enum ItAintRight { BabeNo, NoNo } }
-
-    assert_eq!(0u8.try_as::<ItAintRight>(), Ok(ItAintRight::BabeNo));
-    assert_eq!(1u8.try_as::<ItAintRight>(), Ok(ItAintRight::NoNo));
-    assert_eq!(2u8.try_as::<ItAintRight>(), Err(conv::Unrepresentable(2)));
 }
 
 #[test]
