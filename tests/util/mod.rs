@@ -1,3 +1,5 @@
+#![allow(unused_macros)]
+
 macro_rules! SL {
     ($($tts:tt)*) => { stringify!($($tts)*) };
 }
