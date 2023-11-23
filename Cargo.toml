@@ -1,11 +1,10 @@
 [package]
 name = "conv"
 version = "0.3.4"
-authors = ["Daniel Keep <daniel.keep@gmail.com>"]
+authors = ["Daniel Keep <daniel.keep@gmail.com>", "Eric Seppanen <eds@reric.net>"]
 
 description = "This crate provides a number of conversion traits with more specific semantics than those provided by 'as' or 'From'/'Into'."
-repository = "https://github.com/DanielKeep/rust-conv"
-documentation = "https://danielkeep.github.io/rust-conv/doc/conv/index.html"
+repository = "https://github.com/ericseppanen/conv2"
 readme = "README.md"
 license = "MIT"
 keywords = ["from", "into", "conversion", "approximation"]
