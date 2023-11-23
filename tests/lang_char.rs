@@ -11,19 +11,19 @@ use conv::Unrepresentable as Ur;
 macro_rules! check {
     (@ $from:ty, $to:ty=> $(;)*) => {};
 
-    (@ $from:ty, $to:ty=> try cident; $($tail:tt)*) => {
-        check!(@ $from, $to=> try v: '\x00';);
-        check!(@ $from, $to=> try v: '\x01';);
+    (@ $from:ty, $to:ty=> r#try cident; $($tail:tt)*) => {
+        check!(@ $from, $to=> r#try v: '\x00';);
+        check!(@ $from, $to=> r#try v: '\x01';);
         check!(@ $from, $to=> $($tail)*);
     };
 
-    (@ $from:ty, $to:ty=> try uident; $($tail:tt)*) => {
-        check!(@ $from, $to=> try v: 0;);
-        check!(@ $from, $to=> try v: 1;);
+    (@ $from:ty, $to:ty=> r#try uident; $($tail:tt)*) => {
+        check!(@ $from, $to=> r#try v: 0;);
+        check!(@ $from, $to=> r#try v: 1;);
         check!(@ $from, $to=> $($tail)*);
     };
 
-    (@ $from:ty, $to:ty=> try v: $src:expr, !$dst:expr; $($tail:tt)*) => {
+    (@ $from:ty, $to:ty=> r#try v: $src:expr, !$dst:expr; $($tail:tt)*) => {
         {
             let src: $from = $src;
             let dst: Result<$to, _> = src.try_into();
@@ -32,7 +32,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
-    (@ $from:ty, $to:ty=> try v: $src:expr; $($tail:tt)*) => {
+    (@ $from:ty, $to:ty=> r#try v: $src:expr; $($tail:tt)*) => {
         {
             let src: $from = $src;
             let dst: Result<$to, _> = src.try_into();
@@ -66,7 +66,7 @@ macro_rules! check {
 
 #[test]
 fn test_i_to_c() {
-    check!(u8, char => try uident; qt: *);
+    check!(u8, char => r#try uident; qt: *);
 
     /*
     `char` is a pain because `u8` is the *only* type you can cast directly from.  So, the `check!` macro is *basically useless*.
@@ -91,32 +91,32 @@ fn test_i_to_c() {
 
 #[test]
 fn test_c_to_i() {
-    check!(char, i8=> try cident;
-        try v: '\u{80}', !Of;
+    check!(char, i8=> r#try cident;
+        r#try v: '\u{80}', !Of;
     );
-    check!(char, i16=> try cident;
-        try v: '\u{8000}', !Of;
+    check!(char, i16=> r#try cident;
+        r#try v: '\u{8000}', !Of;
     );
-    check!(char, i32=> try cident;);
-    check!(char, i64=> try cident;);
-    check!(char, u8=> try cident;
-        try v: '\u{100}', !Of;
+    check!(char, i32=> r#try cident;);
+    check!(char, i64=> r#try cident;);
+    check!(char, u8=> r#try cident;
+        r#try v: '\u{100}', !Of;
     );
-    check!(char, u16=> try cident;
-        try v: '\u{10000}', !Of;
+    check!(char, u16=> r#try cident;
+        r#try v: '\u{10000}', !Of;
     );
-    check!(char, u32=> try cident;);
-    check!(char, u64=> try cident;);
+    check!(char, u32=> r#try cident;);
+    check!(char, u64=> r#try cident;);
     for_bitness! {
         32 {
-            check!(char, isize=> try cident;
-                try v: '\u{10ffff}';
+            check!(char, isize=> r#try cident;
+                r#try v: '\u{10ffff}';
             );
-            check!(char, usize=> try cident;);
+            check!(char, usize=> r#try cident;);
         }
         64 {
-            check!(char, i64=> try cident;);
-            check!(char, u64=> try cident;);
+            check!(char, i64=> r#try cident;);
+            check!(char, u64=> r#try cident;);
         }
     }
 }

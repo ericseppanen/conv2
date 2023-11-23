@@ -14,8 +14,8 @@ macro_rules! approx_blind {
     (($($attrs:tt)*), $src:ty, $dst:ty, $scheme:ty) => {
         as_item! {
             $($attrs)*
-            impl ::ApproxFrom<$src, $scheme> for $dst {
-                type Err = ::errors::NoError;
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::NoError;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
                     Ok(src as $dst)
@@ -29,15 +29,15 @@ macro_rules! approx_z_to_dmax {
     (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty) => {
         as_item! {
             $($attrs)*
-            impl ::ApproxFrom<$src, $scheme> for $dst {
-                type Err = ::errors::RangeError<$src>;
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::RangeError<$src>;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(0 <= src) {
-                        return Err(::errors::RangeError::NegOverflow(src));
+                        return Err(crate::errors::RangeError::NegOverflow(src));
                     }
                     if !(src <= max_of!($dst) as $src) {
-                        return Err(::errors::RangeError::PosOverflow(src));
+                        return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -50,12 +50,12 @@ macro_rules! approx_to_dmax {
     (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty) => {
         as_item! {
             $($attrs)*
-            impl ::ApproxFrom<$src, $scheme> for $dst {
-                type Err = ::errors::PosOverflow<$src>;
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::PosOverflow<$src>;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(src <= max_of!($dst) as $src) {
-                        return Err(::errors::PosOverflow(src));
+                        return Err(crate::errors::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -68,15 +68,15 @@ macro_rules! approx_dmin_to_dmax {
     (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty) => {
         as_item! {
             $($attrs)*
-            impl ::ApproxFrom<$src, $scheme> for $dst {
-                type Err = ::errors::RangeError<$src>;
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::RangeError<$src>;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(min_of!($dst) as $src <= src) {
-                        return Err(::errors::RangeError::NegOverflow(src));
+                        return Err(crate::errors::RangeError::NegOverflow(src));
                     }
                     if !(src <= max_of!($dst) as $src) {
-                        return Err(::errors::RangeError::PosOverflow(src));
+                        return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -89,12 +89,12 @@ macro_rules! approx_z_up {
     (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty) => {
         as_item! {
             $($attrs)*
-            impl ::ApproxFrom<$src, $scheme> for $dst {
-                type Err = ::errors::NegOverflow<$src>;
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::NegOverflow<$src>;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(0 <= src) {
-                        return Err(::errors::NegOverflow(src));
+                        return Err(crate::errors::NegOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -125,19 +125,19 @@ macro_rules! approx_range_no_nan {
     (($($attrs:tt)*), $src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
         as_item! {
             $($attrs)*
-            impl ::ApproxFrom<$src, $scheme> for $dst {
-                type Err = ::errors::FloatError<$src>;
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::FloatError<$src>;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
                     if src.is_nan() {
-                        return Err(::errors::FloatError::NotANumber(src));
+                        return Err(crate::errors::FloatError::NotANumber(src));
                     }
                     let approx = { let $src_name = src; $conv };
                     if !($min <= approx) {
-                        return Err(::errors::FloatError::NegOverflow(src));
+                        return Err(crate::errors::FloatError::NegOverflow(src));
                     }
                     if !(approx <= $max) {
-                        return Err(::errors::FloatError::PosOverflow(src));
+                        return Err(crate::errors::FloatError::PosOverflow(src));
                     }
                     Ok(approx as $dst)
                 }
@@ -169,12 +169,12 @@ macro_rules! num_conv {
     // Exact conversion
     (@ $src:ty=> ($($attrs:tt)*) e $dst:ty, $($tail:tt)*) => {
         as_item! {
-            approx_blind! { ($($attrs)*), $src, $dst, ::DefaultApprox }
-            approx_blind! { ($($attrs)*), $src, $dst, ::Wrapping }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::Wrapping }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::NoError;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::NoError;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     Ok(src as $dst)
@@ -187,19 +187,19 @@ macro_rules! num_conv {
     // Narrowing a signed type *into* an unsigned type where the destination type's maximum value is representable by the source type.
     (@ $src:ty=> ($($attrs:tt)*) n+ $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_z_to_dmax! { ($($attrs)*), $src, $dst, ::DefaultApprox }
-            approx_blind! { ($($attrs)*), $src, $dst, ::Wrapping }
+            approx_z_to_dmax! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::Wrapping }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::RangeError<$src>;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::RangeError<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(0 <= src) {
-                        return Err(::errors::RangeError::NegOverflow(src));
+                        return Err(crate::errors::RangeError::NegOverflow(src));
                     }
                     if !(src <= max_of!($dst) as $src) {
-                        return Err(::errors::RangeError::PosOverflow(src));
+                        return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -211,16 +211,16 @@ macro_rules! num_conv {
     // Narrowing an unsigned type *into* a type where the destination type's maximum value is representable by the source type.
     (@ $src:ty=> ($($attrs:tt)*) n- $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_to_dmax! { ($($attrs)*), $src, $dst, ::DefaultApprox }
-            approx_blind! { ($($attrs)*), $src, $dst, ::Wrapping }
+            approx_to_dmax! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::Wrapping }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::PosOverflow<$src>;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::PosOverflow<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(src <= max_of!($dst) as $src) {
-                        return Err(::errors::PosOverflow(src));
+                        return Err(crate::errors::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -232,19 +232,19 @@ macro_rules! num_conv {
     // Narrowing where the destination type's bounds are representable by the source type.
     (@ $src:ty=> ($($attrs:tt)*) n $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_dmin_to_dmax! { ($($attrs)*), $src, $dst, ::DefaultApprox }
-            approx_blind! { ($($attrs)*), $src, $dst, ::Wrapping }
+            approx_dmin_to_dmax! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::Wrapping }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::RangeError<$src>;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::RangeError<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(min_of!($dst) as $src <= src) {
-                        return Err(::errors::RangeError::NegOverflow(src));
+                        return Err(crate::errors::RangeError::NegOverflow(src));
                     }
                     if !(src <= max_of!($dst) as $src) {
-                        return Err(::errors::RangeError::PosOverflow(src));
+                        return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -256,16 +256,16 @@ macro_rules! num_conv {
     // Widening a signed type *into* an unsigned type.
     (@ $src:ty=> ($($attrs:tt)*) w+ $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_z_up! { ($($attrs)*), $src, $dst, ::DefaultApprox }
-            approx_blind! { ($($attrs)*), $src, $dst, ::Wrapping }
+            approx_z_up! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::Wrapping }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::NegOverflow<$src>;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::NegOverflow<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(0 <= src) {
-                        return Err(::errors::NegOverflow(src));
+                        return Err(crate::errors::NegOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -277,12 +277,12 @@ macro_rules! num_conv {
     // Widening.
     (@ $src:ty=> ($($attrs:tt)*) w $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_blind! { ($($attrs)*), $src, $dst, ::DefaultApprox }
-            approx_blind! { ($($attrs)*), $src, $dst, ::Wrapping }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::Wrapping }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::NoError;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::NoError;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     Ok(src as $dst)
@@ -295,18 +295,18 @@ macro_rules! num_conv {
     // Narrowing *into* a floating-point type where the conversion is only exact within a given range.
     (@ $src:ty=> ($($attrs:tt)*) nf [+- $bound:expr] $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_blind! { ($($attrs)*), $src, $dst, ::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::RangeError<$src>;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::RangeError<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(-$bound <= src) {
-                        return Err(::errors::RangeError::NegOverflow(src));
+                        return Err(crate::errors::RangeError::NegOverflow(src));
                     }
                     if !(src <= $bound) {
-                        return Err(::errors::RangeError::PosOverflow(src));
+                        return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -317,15 +317,15 @@ macro_rules! num_conv {
 
     (@ $src:ty=> ($($attrs:tt)*) nf [, $max:expr] $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_blind! { ($($attrs)*), $src, $dst, ::DefaultApprox }
+            approx_blind! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
 
             $($attrs)*
-            impl ::ValueFrom<$src> for $dst {
-                type Err = ::errors::PosOverflow<$src>;
+            impl crate::ValueFrom<$src> for $dst {
+                type Err = crate::errors::PosOverflow<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
                     if !(src <= $max) {
-                        return Err(::errors::PosOverflow(src));
+                        return Err(crate::errors::PosOverflow(src));
                     }
                     Ok(src as $dst)
                 }
@@ -338,29 +338,29 @@ macro_rules! num_conv {
     (@ $src:ty=> ($($attrs:tt)*) fan [$min:expr, $max:expr] $dst:ident, $($tail:tt)*) => {
         as_item! {
             approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                ::DefaultApprox }
+                crate::DefaultApprox }
             approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                ::RoundToNearest, approx: |s| s.round() }
+                crate::RoundToNearest, approx: |s| s.round() }
             approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                ::RoundToNegInf, approx: |s| s.floor() }
+                crate::RoundToNegInf, approx: |s| s.floor() }
             approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                ::RoundToPosInf, approx: |s| s.ceil() }
+                crate::RoundToPosInf, approx: |s| s.ceil() }
             approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                ::RoundToZero, approx: |s| s.trunc() }
+                crate::RoundToZero, approx: |s| s.trunc() }
         }
         num_conv! { @ $src=> $($tail)* }
     };
 
     (@ $src:ty=> ($($attrs:tt)*) fan $dst:ident, $($tail:tt)*) => {
         as_item! {
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, ::DefaultApprox }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, ::RoundToNearest,
+            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
+            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToNearest,
                 approx: |s| s.round() }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, ::RoundToNegInf,
+            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToNegInf,
                 approx: |s| s.floor() }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, ::RoundToPosInf,
+            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToPosInf,
                 approx: |s| s.ceil() }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, ::RoundToZero,
+            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToZero,
                 approx: |s| s.trunc() }
         }
         num_conv! { @ $src=> $($tail)* }
@@ -397,9 +397,9 @@ mod lang_ints {
 
 #[cfg(feature = "std")]
 mod lang_floats {
-    use errors::{NoError, RangeError};
-    use ValueFrom;
-    use {ApproxFrom, ApproxScheme};
+    use crate::errors::{NoError, RangeError};
+    use crate::ValueFrom;
+    use crate::{ApproxFrom, ApproxScheme};
 
     // f32 -> f64: strictly widening
     impl<Scheme> ApproxFrom<f32, Scheme> for f64
@@ -488,9 +488,9 @@ mod lang_float_to_int {
 }
 
 mod lang_char_to_int {
-    use errors::{NoError, PosOverflow};
-    use TryFrom;
-    use ValueFrom;
+    use crate::errors::{NoError, PosOverflow};
+    use crate::TryFrom;
+    use crate::ValueFrom;
 
     impl TryFrom<char> for u32 {
         type Err = NoError;
@@ -550,9 +550,9 @@ mod lang_char_to_int {
 }
 
 mod lang_int_to_char {
-    use errors::{NoError, Unrepresentable, UnwrapOk};
-    use TryFrom;
-    use ValueFrom;
+    use crate::errors::{NoError, Unrepresentable, UnwrapOk};
+    use crate::TryFrom;
+    use crate::ValueFrom;
 
     impl TryFrom<u8> for char {
         type Err = NoError;

@@ -232,7 +232,7 @@ extern crate custom_derive;
 // Exported macros.
 pub mod macros;
 
-pub use errors::{
+pub use crate::errors::{
     FloatError, GeneralError, GeneralErrorKind, NegOverflow, NoError, PosOverflow, RangeError,
     RangeErrorKind, Saturate, Unrepresentable, UnwrapOk, UnwrapOrInf, UnwrapOrInvalid,
     UnwrapOrSaturate,

@@ -4,10 +4,10 @@ This module defines the various error types that can be produced by a failed con
 In addition, it also defines some extension traits to make working with failable conversions more ergonomic (see the `Unwrap*` traits).
 */
 
-use misc::{InvalidSentinel, Saturated, SignedInfinity};
+use crate::misc::{InvalidSentinel, Saturated, SignedInfinity};
 use std::any::Any;
 use std::fmt::{self, Debug, Display};
-use Error;
+use crate::Error;
 
 macro_rules! Desc {
     (
