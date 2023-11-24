@@ -72,46 +72,26 @@ fn main() {
     limits!(f64 => u64; > 18446744073709500000.0);
 }
 
+fn format_hex_parts(
+    f: &mut fmt::Formatter,
+    leading: char,
+    sig: impl Into<u64>,
+    exp: impl Into<i64>,
+) -> fmt::Result {
+    let sig = sig.into();
+    let exp = exp.into();
+    let sig_fmt = format!("{:x}", sig);
+    let mut sig_fmt = sig_fmt.trim_end_matches('0');
+    if sig_fmt.is_empty() {
+        sig_fmt = "0";
+    }
+    write!(f, "0x{leading}.{sig_fmt}p{exp}")
+}
 struct FloatHex<T>(pub T);
 
 impl fmt::LowerHex for FloatHex<f32> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         use std::num::FpCategory;
-
-        fn write_sig(fmt: &mut fmt::Formatter, sig: u32) -> fmt::Result {
-            let mut sig = sig << 9;
-            loop {
-                let nib = sig >> 28;
-                fmt.write_str(match nib {
-                    0 => "0",
-                    1 => "1",
-                    2 => "2",
-                    3 => "3",
-                    4 => "4",
-                    5 => "5",
-                    6 => "6",
-                    7 => "7",
-                    8 => "8",
-                    9 => "9",
-                    10 => "a",
-                    11 => "b",
-                    12 => "c",
-                    13 => "d",
-                    14 => "e",
-                    _ => "f",
-                })?;
-                sig <<= 4;
-                if sig == 0 {
-                    break;
-                }
-            }
-            Ok(())
-        }
-
-        fn write_exp(fmt: &mut fmt::Formatter, exp: i16) -> fmt::Result {
-            write!(fmt, "p{}", exp)?;
-            Ok(())
-        }
 
         let v = self.0;
 
@@ -142,9 +122,7 @@ impl fmt::LowerHex for FloatHex<f32> {
                 } else if fmt.sign_plus() {
                     fmt.write_str("+")?;
                 }
-                fmt.write_str("0x0.")?;
-                write_sig(fmt, sig)?;
-                write_exp(fmt, exp)?;
+                format_hex_parts(fmt, '0', sig << 1, exp)?;
             }
             FpCategory::Normal => {
                 let (neg, exp, sig) = v.decompose();
@@ -153,9 +131,7 @@ impl fmt::LowerHex for FloatHex<f32> {
                 } else if fmt.sign_plus() {
                     fmt.write_str("+")?;
                 }
-                fmt.write_str("0x1.")?;
-                write_sig(fmt, sig)?;
-                write_exp(fmt, exp)?;
+                format_hex_parts(fmt, '1', sig << 1, exp)?;
             }
         }
 
@@ -167,41 +143,6 @@ impl fmt::LowerHex for FloatHex<f64> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         use std::num::FpCategory;
 
-        fn write_sig(fmt: &mut fmt::Formatter, sig: u64) -> fmt::Result {
-            let mut sig = sig << 13;
-            loop {
-                let nib = sig >> 60;
-                fmt.write_str(match nib {
-                    0 => "0",
-                    1 => "1",
-                    2 => "2",
-                    3 => "3",
-                    4 => "4",
-                    5 => "5",
-                    6 => "6",
-                    7 => "7",
-                    8 => "8",
-                    9 => "9",
-                    10 => "a",
-                    11 => "b",
-                    12 => "c",
-                    13 => "d",
-                    14 => "e",
-                    _ => "f",
-                })?;
-                sig <<= 4;
-                if sig == 0 {
-                    break;
-                }
-            }
-            Ok(())
-        }
-
-        fn write_exp(fmt: &mut fmt::Formatter, exp: i16) -> fmt::Result {
-            write!(fmt, "p{}", exp)?;
-            Ok(())
-        }
-
         let v = self.0;
 
         match v.classify() {
@@ -231,9 +172,7 @@ impl fmt::LowerHex for FloatHex<f64> {
                 } else if fmt.sign_plus() {
                     fmt.write_str("+")?;
                 }
-                fmt.write_str("0x0.")?;
-                write_sig(fmt, sig)?;
-                write_exp(fmt, exp)?;
+                format_hex_parts(fmt, '0', sig << 1, exp)?;
             }
             FpCategory::Normal => {
                 let (neg, exp, sig) = v.decompose();
@@ -242,9 +181,7 @@ impl fmt::LowerHex for FloatHex<f64> {
                 } else if fmt.sign_plus() {
                     fmt.write_str("+")?;
                 }
-                fmt.write_str("0x1.")?;
-                write_sig(fmt, sig)?;
-                write_exp(fmt, exp)?;
+                format_hex_parts(fmt, '1', sig << 1, exp)?;
             }
         }
 
