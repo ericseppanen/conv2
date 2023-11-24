@@ -2,8 +2,8 @@
 //!
 //! This is to verify *exactly* what the safe range for float-to-int conversions is.
 
-use std::fmt;
 use ieee754::Ieee754;
+use std::fmt;
 
 macro_rules! limits {
     ($src:ty => $dst:ident; < $min:expr, > $max:expr) => {
@@ -41,7 +41,7 @@ macro_rules! limits {
                 let next_int = next as $dst;
                 let next_rnd = next_int as $src;
                 if next_rnd != next {
-                    println!("\rsafe {} min: {:+}, {:+e}, {:+x}",
+                    println!("safe {} min: {:+}, {:+e}, {:+x}",
                         stringify!($src => $dst), cur, cur, FloatHex(cur));
                     break;
                 } else {
@@ -82,20 +82,34 @@ impl fmt::LowerHex for FloatHex<f32> {
             let mut sig = sig << 9;
             loop {
                 let nib = sig >> 28;
-                try!(fmt.write_str(match nib {
-                    0 => "0", 1 => "1", 2 => "2", 3 => "3",
-                    4 => "4", 5 => "5", 6 => "6", 7 => "7",
-                    8 => "8", 9 => "9", 10 => "a", 11 => "b",
-                    12 => "c", 13 => "d", 14 => "e", _ => "f",
-                }));
+                fmt.write_str(match nib {
+                    0 => "0",
+                    1 => "1",
+                    2 => "2",
+                    3 => "3",
+                    4 => "4",
+                    5 => "5",
+                    6 => "6",
+                    7 => "7",
+                    8 => "8",
+                    9 => "9",
+                    10 => "a",
+                    11 => "b",
+                    12 => "c",
+                    13 => "d",
+                    14 => "e",
+                    _ => "f",
+                })?;
                 sig <<= 4;
-                if sig == 0 { break; }
+                if sig == 0 {
+                    break;
+                }
             }
             Ok(())
         }
 
         fn write_exp(fmt: &mut fmt::Formatter, exp: i16) -> fmt::Result {
-            try!(write!(fmt, "p{}", exp));
+            write!(fmt, "p{}", exp)?;
             Ok(())
         }
 
@@ -103,40 +117,46 @@ impl fmt::LowerHex for FloatHex<f32> {
 
         match v.classify() {
             FpCategory::Nan => {
-                try!(fmt.write_str("nan"));
-            },
+                fmt.write_str("nan")?;
+            }
             FpCategory::Infinite => {
                 if v.is_sign_negative() {
-                    try!(fmt.write_str("-"));
+                    fmt.write_str("-")?;
                 } else if fmt.sign_plus() {
-                    try!(fmt.write_str("+"));
+                    fmt.write_str("+")?;
                 }
-                try!(fmt.write_str("infinity"));
-            },
+                fmt.write_str("infinity")?;
+            }
             FpCategory::Zero => {
                 if v.is_sign_negative() {
-                    try!(fmt.write_str("-"));
+                    fmt.write_str("-")?;
                 } else if fmt.sign_plus() {
-                    try!(fmt.write_str("+"));
+                    fmt.write_str("+")?;
                 }
-                try!(fmt.write_str("0x0p0"));
-            },
+                fmt.write_str("0x0p0")?;
+            }
             FpCategory::Subnormal => {
                 let (neg, exp, sig) = v.decompose();
-                if neg { try!(fmt.write_str("-")); }
-                else if fmt.sign_plus() { try!(fmt.write_str("+")); }
-                try!(fmt.write_str("0x0."));
-                try!(write_sig(fmt, sig));
-                try!(write_exp(fmt, exp));
-            },
+                if neg {
+                    fmt.write_str("-")?;
+                } else if fmt.sign_plus() {
+                    fmt.write_str("+")?;
+                }
+                fmt.write_str("0x0.")?;
+                write_sig(fmt, sig)?;
+                write_exp(fmt, exp)?;
+            }
             FpCategory::Normal => {
                 let (neg, exp, sig) = v.decompose();
-                if neg { try!(fmt.write_str("-")); }
-                else if fmt.sign_plus() { try!(fmt.write_str("+")); }
-                try!(fmt.write_str("0x1."));
-                try!(write_sig(fmt, sig));
-                try!(write_exp(fmt, exp));
-            },
+                if neg {
+                    fmt.write_str("-")?;
+                } else if fmt.sign_plus() {
+                    fmt.write_str("+")?;
+                }
+                fmt.write_str("0x1.")?;
+                write_sig(fmt, sig)?;
+                write_exp(fmt, exp)?;
+            }
         }
 
         Ok(())
@@ -151,20 +171,34 @@ impl fmt::LowerHex for FloatHex<f64> {
             let mut sig = sig << 13;
             loop {
                 let nib = sig >> 60;
-                try!(fmt.write_str(match nib {
-                    0 => "0", 1 => "1", 2 => "2", 3 => "3",
-                    4 => "4", 5 => "5", 6 => "6", 7 => "7",
-                    8 => "8", 9 => "9", 10 => "a", 11 => "b",
-                    12 => "c", 13 => "d", 14 => "e", _ => "f",
-                }));
+                fmt.write_str(match nib {
+                    0 => "0",
+                    1 => "1",
+                    2 => "2",
+                    3 => "3",
+                    4 => "4",
+                    5 => "5",
+                    6 => "6",
+                    7 => "7",
+                    8 => "8",
+                    9 => "9",
+                    10 => "a",
+                    11 => "b",
+                    12 => "c",
+                    13 => "d",
+                    14 => "e",
+                    _ => "f",
+                })?;
                 sig <<= 4;
-                if sig == 0 { break; }
+                if sig == 0 {
+                    break;
+                }
             }
             Ok(())
         }
 
         fn write_exp(fmt: &mut fmt::Formatter, exp: i16) -> fmt::Result {
-            try!(write!(fmt, "p{}", exp));
+            write!(fmt, "p{}", exp)?;
             Ok(())
         }
 
@@ -172,40 +206,46 @@ impl fmt::LowerHex for FloatHex<f64> {
 
         match v.classify() {
             FpCategory::Nan => {
-                try!(fmt.write_str("nan"));
-            },
+                fmt.write_str("nan")?;
+            }
             FpCategory::Infinite => {
                 if v.is_sign_negative() {
-                    try!(fmt.write_str("-"));
+                    fmt.write_str("-")?;
                 } else if fmt.sign_plus() {
-                    try!(fmt.write_str("+"));
+                    fmt.write_str("+")?;
                 }
-                try!(fmt.write_str("infinity"));
-            },
+                fmt.write_str("infinity")?;
+            }
             FpCategory::Zero => {
                 if v.is_sign_negative() {
-                    try!(fmt.write_str("-"));
+                    fmt.write_str("-")?;
                 } else if fmt.sign_plus() {
-                    try!(fmt.write_str("+"));
+                    fmt.write_str("+")?;
                 }
-                try!(fmt.write_str("0x0p0"));
-            },
+                fmt.write_str("0x0p0")?;
+            }
             FpCategory::Subnormal => {
                 let (neg, exp, sig) = v.decompose();
-                if neg { try!(fmt.write_str("-")); }
-                else if fmt.sign_plus() { try!(fmt.write_str("+")); }
-                try!(fmt.write_str("0x0."));
-                try!(write_sig(fmt, sig));
-                try!(write_exp(fmt, exp));
-            },
+                if neg {
+                    fmt.write_str("-")?;
+                } else if fmt.sign_plus() {
+                    fmt.write_str("+")?;
+                }
+                fmt.write_str("0x0.")?;
+                write_sig(fmt, sig)?;
+                write_exp(fmt, exp)?;
+            }
             FpCategory::Normal => {
                 let (neg, exp, sig) = v.decompose();
-                if neg { try!(fmt.write_str("-")); }
-                else if fmt.sign_plus() { try!(fmt.write_str("+")); }
-                try!(fmt.write_str("0x1."));
-                try!(write_sig(fmt, sig));
-                try!(write_exp(fmt, exp));
-            },
+                if neg {
+                    fmt.write_str("-")?;
+                } else if fmt.sign_plus() {
+                    fmt.write_str("+")?;
+                }
+                fmt.write_str("0x1.")?;
+                write_sig(fmt, sig)?;
+                write_exp(fmt, exp)?;
+            }
         }
 
         Ok(())

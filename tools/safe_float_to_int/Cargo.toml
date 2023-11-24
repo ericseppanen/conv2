@@ -1,0 +1,7 @@
+[package]
+name = "safe_float_to_int"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ieee754 = "0.2.6"
