@@ -113,7 +113,7 @@
 //! # Examples
 //!
 //! ```
-//! # use conv::*;
+//! # use conv2::*;
 //!
 //! // This *cannot* fail, so we can use `unwrap_ok` to discard the `Result`.
 //! assert_eq!(u8::value_from(0u8).unwrap_ok(), 0u8);
