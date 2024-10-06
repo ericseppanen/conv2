@@ -186,7 +186,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv1 {:?}", err)
+                Err(err) => panic!("qv1 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -211,7 +211,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv2 {:?}", err)
+                Err(err) => panic!("qv2 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -234,7 +234,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv3 {:?}", err)
+                Err(err) => panic!("qv3 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -257,7 +257,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv4 {:?}", err)
+                Err(err) => panic!("qv4 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -280,7 +280,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv5 {:?}", err)
+                Err(err) => panic!("qv5 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -305,7 +305,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv6 {:?}", err)
+                Err(err) => panic!("qv6 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -330,7 +330,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv7 {:?}", err)
+                Err(err) => panic!("qv7 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -386,7 +386,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa1 {:?}", err)
+                Err(err) => panic!("qa1 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -409,7 +409,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa2 {:?}", err)
+                Err(err) => panic!("qa2 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -432,7 +432,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa3 {:?}", err)
+                Err(err) => panic!("qa3 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -462,7 +462,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa4 {:?}", err)
+                Err(err) => panic!("qa4 {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
@@ -481,7 +481,7 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qaW {:?}", err)
+                Err(err) => panic!("qaW {err:?}")
             }
         }
         check!(@ $from, $to=> $($tail)*);
