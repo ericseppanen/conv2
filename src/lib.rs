@@ -418,8 +418,8 @@ where
 /// See also the [`ConvAsUtil`](./trait.ConvAsUtil.html) trait.
 ///
 /// > **Note**: There appears to be a bug in `rustdoc`'s output. This trait is
-/// implemented *for all* types, though the methods are only available for
-/// types where the appropriate conversions are defined.
+/// > implemented *for all* types, though the methods are only available for
+/// > types where the appropriate conversions are defined.
 pub trait ConvUtil {
     /// Approximate the subject to a given type with the default scheme.
     fn approx_as<Dst>(self) -> Result<Dst, Self::Err>
@@ -477,8 +477,8 @@ impl<T> ConvUtil for T {}
 /// See also the [`ConvUtil`](./trait.ConvUtil.html) trait.
 ///
 /// > **Note**: There appears to be a bug in `rustdoc`'s output. This trait is
-/// implemented *for all* types, though the methods are only available for
-/// types where the appropriate conversions are defined.
+/// > implemented *for all* types, though the methods are only available for
+/// > types where the appropriate conversions are defined.
 pub trait ConvAsUtil<Dst> {
     /// Approximate the subject with the default scheme.
     fn approx(self) -> Result<Dst, Self::Err>

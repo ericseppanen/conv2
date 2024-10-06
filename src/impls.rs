@@ -1,15 +1,3 @@
-macro_rules! max_of {
-    ($name:ident) => {
-        ::core::$name::MAX
-    };
-}
-
-macro_rules! min_of {
-    ($name:ident) => {
-        ::core::$name::MIN
-    };
-}
-
 macro_rules! approx_blind {
     (($($attrs:tt)*), $src:ty, $dst:ty, $scheme:ty) => {
         as_item! {
@@ -36,7 +24,7 @@ macro_rules! approx_z_to_dmax {
                     if !(0 <= src) {
                         return Err(crate::errors::RangeError::NegOverflow(src));
                     }
-                    if !(src <= max_of!($dst) as $src) {
+                    if !(src <= $dst::MAX as $src) {
                         return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
@@ -54,7 +42,7 @@ macro_rules! approx_to_dmax {
                 type Err = crate::errors::PosOverflow<$src>;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
-                    if !(src <= max_of!($dst) as $src) {
+                    if !(src <= $dst::MAX as $src) {
                         return Err(crate::errors::PosOverflow(src));
                     }
                     Ok(src as $dst)
@@ -72,10 +60,10 @@ macro_rules! approx_dmin_to_dmax {
                 type Err = crate::errors::RangeError<$src>;
                 #[inline]
                 fn approx_from(src: $src) -> Result<$dst, Self::Err> {
-                    if !(min_of!($dst) as $src <= src) {
+                    if !($dst::MIN as $src <= src) {
                         return Err(crate::errors::RangeError::NegOverflow(src));
                     }
-                    if !(src <= max_of!($dst) as $src) {
+                    if !(src <= $dst::MAX as $src) {
                         return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
@@ -111,7 +99,7 @@ macro_rules! approx_dmin_to_dmax_no_nan {
     (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
         approx_range_no_nan! {
             ($($attrs)*), $src,
-            $dst, [min_of!($dst) as $src, max_of!($dst) as $src],
+            $dst, [$dst::MIN as $src, $dst::MAX as $src],
             $scheme, approx: |$src_name| $conv
         }
     };
@@ -198,7 +186,7 @@ macro_rules! num_conv {
                     if !(0 <= src) {
                         return Err(crate::errors::RangeError::NegOverflow(src));
                     }
-                    if !(src <= max_of!($dst) as $src) {
+                    if !(src <= $dst::MAX as $src) {
                         return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
@@ -219,7 +207,7 @@ macro_rules! num_conv {
                 type Err = crate::errors::PosOverflow<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
-                    if !(src <= max_of!($dst) as $src) {
+                    if !(src <= $dst::MAX as $src) {
                         return Err(crate::errors::PosOverflow(src));
                     }
                     Ok(src as $dst)
@@ -240,10 +228,10 @@ macro_rules! num_conv {
                 type Err = crate::errors::RangeError<$src>;
                 #[inline]
                 fn value_from(src: $src) -> Result<$dst, Self::Err> {
-                    if !(min_of!($dst) as $src <= src) {
+                    if !($dst::MIN as $src <= src) {
                         return Err(crate::errors::RangeError::NegOverflow(src));
                     }
-                    if !(src <= max_of!($dst) as $src) {
+                    if !(src <= $dst::MAX as $src) {
                         return Err(crate::errors::RangeError::PosOverflow(src));
                     }
                     Ok(src as $dst)
@@ -428,10 +416,10 @@ mod lang_floats {
             if !src.is_finite() {
                 return Ok(src as f32);
             }
-            if !(::core::f32::MIN as f64 <= src) {
+            if !(f32::MIN as f64 <= src) {
                 return Err(RangeError::NegOverflow(src));
             }
-            if !(src <= ::core::f32::MAX as f64) {
+            if !(src <= f32::MAX as f64) {
                 return Err(RangeError::PosOverflow(src));
             }
             Ok(src as f32)
