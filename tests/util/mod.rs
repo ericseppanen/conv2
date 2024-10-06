@@ -172,7 +172,6 @@ macro_rules! check {
     // Quickcheck using `value_into`; destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: *; $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qv: *", SL!($from), SL!($to));
 
             fn property(v: $from) -> bool {
@@ -196,7 +195,6 @@ macro_rules! check {
     // Quickcheck using `value_into` (may over/underflow bound); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: (+-$bound:expr); $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qv: (+- {})", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
@@ -222,7 +220,6 @@ macro_rules! check {
     // Quickcheck using `value_into` (may overflow bound); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: (, $bound:expr); $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qv: (, {})", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
@@ -246,7 +243,6 @@ macro_rules! check {
     // Quickcheck using `value_into` (positive only); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: +; $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qv: +", SL!($from), SL!($to));
 
             fn property(v: $from) -> bool {
@@ -270,7 +266,6 @@ macro_rules! check {
     // Quickcheck using `value_into` (may overflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: +$max:ty=> $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qv: +{}", SL!($from), SL!($to), SL!($max));
 
             fn property(v: $from) -> bool {
@@ -294,7 +289,6 @@ macro_rules! check {
     // Quickcheck using `value_into` (may over/underflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: $bound:ty=> $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qv: {}", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
@@ -320,7 +314,6 @@ macro_rules! check {
     // Quickcheck using `value_into` (may over/underflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: $min:ty, $max:ty=> $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qv: {}, {}", SL!($from), SL!($to), SL!($min), SL!($max));
 
             fn property(v: $from) -> bool {
@@ -379,7 +372,6 @@ macro_rules! check {
     // Quickcheck using `approx_as`; destination value computed using `as`
     (@ $from:ty, $to:ty=> qa: *; $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qa: *", SL!($from), SL!($to));
 
             fn property(v: $from) -> bool {
@@ -403,7 +395,6 @@ macro_rules! check {
     // Quickcheck using `approx_as` (positive only) destination value computed using `as`.
     (@ $from:ty, $to:ty=> qa: +; $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qa: +", SL!($from), SL!($to));
 
             fn property(v: $from) -> bool {
@@ -427,7 +418,6 @@ macro_rules! check {
     // Quickcheck using `approx_as` (may overflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qa: +$max:ty=> $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qa: +{}", SL!($from), SL!($to), SL!($max));
 
             fn property(v: $from) -> bool {
@@ -451,7 +441,6 @@ macro_rules! check {
     // Quickcheck using `approx_as` (may over/overflow bound); destination value computed using `as`
     (@ $from:ty, $to:ty=> qa: $bound:ty=> $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qa: {}", SL!($from), SL!($to), SL!($bound));
 
             fn property(v: $from) -> bool {
@@ -482,7 +471,6 @@ macro_rules! check {
     // Quickcheck using `approx_as` with wrapping; destination value computed using `as`
     (@ $from:ty, $to:ty=> qaW: *; $($tail:tt)*) => {
         {
-            extern crate quickcheck;
             println!("? {} => {}, qaW: *", SL!($from), SL!($to));
 
             fn property(v: $from) -> bool {
