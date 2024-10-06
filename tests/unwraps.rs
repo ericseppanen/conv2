@@ -28,11 +28,11 @@ fn test_unwraps() {
     );
     assert_eq!(
         cty!(16_777_217i32.value_into().unwrap_or_inf(), f32),
-        std::f32::INFINITY
+        f32::INFINITY
     );
     assert_eq!(
         cty!((-16_777_217i32).value_into().unwrap_or_inf(), f32),
-        std::f32::NEG_INFINITY
+        f32::NEG_INFINITY
     );
 
     assert_eq!(

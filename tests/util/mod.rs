@@ -3,6 +3,7 @@
 /// Detects floating point NaN; which is not equal to itself.
 #[cfg(test)]
 #[allow(dead_code)] // This module is a submodule of multiple test modules.
+#[allow(clippy::eq_op)] // `val != val` looks wrong, but is correct.
 pub fn is_nan<T>(val: T) -> bool
 where
     T: PartialEq,
@@ -14,7 +15,9 @@ where
 macro_rules! is_infinite {
     ($value:expr, $type:ty) => {{
         let v = $value;
-        (v > <$type>::MAX) || (v < <$type>::MIN)
+        // I'm not sure this would be improved by using .contains()
+        #[allow(clippy::manual_range_contains)]
+        ((v > <$type>::MAX) || (v < <$type>::MIN))
     }};
 }
 
@@ -199,9 +202,9 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(-$bound as $from <= v) {
+                if v < -$bound as $from {
                     dst == Err(conv2::FloatError::NegOverflow(v))
-                } else if !(v <= $bound as $from) {
+                } else if v > $bound as $from {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -224,7 +227,7 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(v <= $bound as $from) {
+                if v > $bound as $from {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -247,7 +250,7 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(0 <= v) {
+                if v < 0 {
                     dst == Err(conv2::FloatError::NegOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -270,7 +273,8 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(v <= <$max>::MAX as $from) {
+                let max = <$max>::MAX as $from;
+                if v > max {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -293,9 +297,11 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(<$bound>::MIN as $from <= v) {
+                let min = <$bound>::MIN as $from;
+                let max = <$bound>::MAX as $from;
+                if v < min {
                     dst == Err(conv2::FloatError::NegOverflow(v))
-                } else if !(v <= <$bound>::MAX as $from) {
+                } else if v > max {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -318,9 +324,11 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(<$min>::MIN as $from <= v) {
+                let min = <$min>::MIN as $from;
+                let max = <$max>::MAX as $from;
+                if v < min {
                     dst == Err(conv2::FloatError::NegOverflow(v))
-                } else if !(v <= <$max>::MAX as $from) {
+                } else if v > max {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -399,7 +407,7 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
-                if !(0 <= v) {
+                if v < 0 {
                     dst == Err(conv2::FloatError::NegOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -422,7 +430,8 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
-                if !(v <= <$max>::MAX as $from) {
+                let max = <$max>::MAX as $from;
+                if v > max {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -445,14 +454,16 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
+                let min = <$bound>::MIN as $from;
+                let max = <$bound>::MAX as $from;
                 if util::is_nan(v) {
                     // float NaN -> integer is Err; f64::NAN -> f32::NAN.
                     dst.is_err() || util::is_nan(dst)
                 } else if is_infinite!(v, $from) && dst.is_ok() {
                     dst == Ok(v as $to)
-                } else if !(<$bound>::MIN as $from <= v) {
+                } else if v < min {
                     dst == Err(conv2::FloatError::NegOverflow(v))
-                } else if !(v <= <$bound>::MAX as $from) {
+                } else if v > max {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
