@@ -2,7 +2,7 @@
 
 /// Detects floating point NaN; which is not equal to itself.
 #[cfg(test)]
-#[allow(dead_code)] // FIXME why?
+#[allow(dead_code)] // This module is a submodule of multiple test modules.
 pub fn is_nan<T>(val: T) -> bool
 where
     T: PartialEq,
