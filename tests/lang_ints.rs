@@ -40,7 +40,7 @@ fn test_i16() {
     check!(i16, i16=> sident; qv: *; qa: *; qaW: *);
     check!(i16, i32=> sident; qv: *; qa: *; qaW: *);
     check!(i16, i64=> sident; qv: *; qa: *; qaW: *);
-    check!(i16, u8=> uident; qv: u8=> qa: +; qaW: *;
+    check!(i16, u8=> uident; qv: u8=> qa: u8=> qaW: *;
         v: -1, !RU;
     );
     check!(i16, u16=> uident; qv: u16, i16=> qa: +; qaW: *;
@@ -282,7 +282,7 @@ fn test_isize() {
             );
         }
         64 {
-            check!(isize, i32=> sident; qv: *; qa: *; qaW: *);
+            check!(isize, i32=> sident; qv: i32=> qa: i32=> qaW: *; v: -2147483649, !RU; v: 2147483648, !RO;);
             check!(isize, i64=> sident; qv: *; qa: *; qaW: *);
             check!(isize, u32=> uident; qv: u32=> qa: u32=> qaW: *;
                 v: -1, !RU; v: 4_294_967_296, !RO;

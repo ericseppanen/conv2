@@ -1,5 +1,23 @@
 #![allow(unused_macros)]
 
+/// Detects floating point NaN; which is not equal to itself.
+#[cfg(test)]
+#[allow(dead_code)] // FIXME why?
+pub fn is_nan<T>(val: T) -> bool
+where
+    T: PartialEq,
+{
+    val != val
+}
+
+/// Detects floating point +/- infinity by checking if `value` is greater than T::MAX or less than T::MIN.
+macro_rules! is_infinite {
+    ($value:expr, $type:ty) => {{
+        let v = $value;
+        (v > <$type>::MAX) || (v < <$type>::MIN)
+    }};
+}
+
 macro_rules! SL {
     ($($tts:tt)*) => { stringify!($($tts)*) };
 }
@@ -13,18 +31,14 @@ macro_rules! as_expr {
 macro_rules! check {
     (@ $from:ty, $to:ty=> $(;)*) => {};
 
-    (@ $from:ty, $to:ty=> cident; $($tail:tt)*) => {
-        check!(@ $from, $to=> v: '\x00';);
-        check!(@ $from, $to=> v: '\x01';);
-        check!(@ $from, $to=> $($tail)*);
-    };
-
+    // To unsigned int
     (@ $from:ty, $to:ty=> uident; $($tail:tt)*) => {
         check!(@ $from, $to=> v: 0;);
         check!(@ $from, $to=> v: 1;);
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // To signed int
     (@ $from:ty, $to:ty=> sident; $($tail:tt)*) => {
         check!(@ $from, $to=> v: -1;);
         check!(@ $from, $to=> v: 0;);
@@ -32,6 +46,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // To floating point
     (@ $from:ty, $to:ty=> fident; $($tail:tt)*) => {
         check!(@ $from, $to=> v: -1.0;);
         check!(@ $from, $to=> v:  0.0;);
@@ -39,6 +54,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // To unsigned int (approx), with rounding checks
     (@ $from:ty, $to:ty=> uidenta; $($tail:tt)*) => {
         check!(@ $from, $to=> a: 0.0;);
         check!(@ $from, $to=> a: 1.0;);
@@ -70,6 +86,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // To signed int (approx), with rounding checks
     (@ $from:ty, $to:ty=> sidenta; $($tail:tt)*) => {
         check!(@ $from, $to=> a: -1.0;);
         check!(@ $from, $to=> a:  0.0;);
@@ -118,6 +135,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // To floating point (approx)
     (@ $from:ty, $to:ty=> fidenta; $($tail:tt)*) => {
         check!(@ $from, $to=> a: -1.0;);
         check!(@ $from, $to=> a:  0.0;);
@@ -125,6 +143,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Single check using `value_into`
     (@ $from:ty, $to:ty=> v: $src:expr, !$dst:expr; $($tail:tt)*) => {
         {
             println!("? {} => {}, v: {}, !{}", SL!($from), SL!($to), SL!($src), SL!($dst));
@@ -135,16 +154,22 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Single check using `value_into`; destination value computed using `as`
     (@ $from:ty, $to:ty=> v: $src:expr; $($tail:tt)*) => {
         {
             println!("? {} => {}, v: {}", SL!($from), SL!($to), SL!($src));
             let src: $from = $src;
             let dst: Result<$to, _> = src.value_into();
-            assert_eq!(dst, Ok($src as $to));
+            if util::is_nan(src) {
+                assert!(util::is_nan(dst.expect("error but expected NaN")));
+            } else {
+                assert_eq!(dst, Ok($src as $to));
+            }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `value_into`; destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: *; $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -152,18 +177,23 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, _> = v.value_into();
-                dst == Ok(v as $to)
+                if util::is_nan(v) {
+                    util::is_nan(dst)
+                } else {
+                    dst == Ok(v as $to)
+                }
             }
 
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv {:?}", err)
+                Err(err) => panic!("qv1 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `value_into` (may over/underflow bound); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: (+-$bound:expr); $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -183,12 +213,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv {:?}", err)
+                Err(err) => panic!("qv2 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `value_into` (may overflow bound); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: (, $bound:expr); $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -206,12 +237,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv {:?}", err)
+                Err(err) => panic!("qv3 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `value_into` (positive only); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: +; $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -229,12 +261,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv {:?}", err)
+                Err(err) => panic!("qv4 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `value_into` (may overflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: +$max:ty=> $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -242,7 +275,7 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(v <= <$max>::max_value() as $from) {
+                if !(v <= <$max>::MAX as $from) {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -252,12 +285,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv {:?}", err)
+                Err(err) => panic!("qv5 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `value_into` (may over/underflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: $bound:ty=> $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -265,9 +299,9 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(<$bound>::min_value() as $from <= v) {
+                if !(<$bound>::MIN as $from <= v) {
                     dst == Err(conv2::FloatError::NegOverflow(v))
-                } else if !(v <= <$bound>::max_value() as $from) {
+                } else if !(v <= <$bound>::MAX as $from) {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -277,12 +311,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv {:?}", err)
+                Err(err) => panic!("qv6 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `value_into` (may over/underflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qv: $min:ty, $max:ty=> $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -290,9 +325,9 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.value_into().map_err(From::from);
-                if !(<$min>::min_value() as $from <= v) {
+                if !(<$min>::MIN as $from <= v) {
                     dst == Err(conv2::FloatError::NegOverflow(v))
-                } else if !(v <= <$max>::max_value() as $from) {
+                } else if !(v <= <$max>::MAX as $from) {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -302,12 +337,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qv {:?}", err)
+                Err(err) => panic!("qv7 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Single check using `approx_as`; Expects error.
     (@ $from:ty, $to:ty=> a: $src:expr, !$dst:expr; $($tail:tt)*) => {
         {
             println!("? {} => {}, a: {}, !{}", SL!($from), SL!($to), SL!($src), SL!($dst));
@@ -318,6 +354,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Single check using `approx_as`.
     (@ $from:ty, $to:ty=> a: $src:expr, $dst:expr; $($tail:tt)*) => {
         {
             println!("? {} => {}, a: {}, {}", SL!($from), SL!($to), SL!($src), SL!($dst));
@@ -328,6 +365,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Single check using `approx_as`; destination value computed using `as`.
     (@ $from:ty, $to:ty=> a: $src:expr; $($tail:tt)*) => {
         {
             println!("? {} => {}, a: {}", SL!($from), SL!($to), SL!($src));
@@ -338,6 +376,7 @@ macro_rules! check {
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `approx_as`; destination value computed using `as`
     (@ $from:ty, $to:ty=> qa: *; $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -345,18 +384,23 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, _> = v.approx_as();
-                dst == Ok(v as $to)
+                if util::is_nan(v) {
+                    util::is_nan(dst.expect("error but expected NaN"))
+                } else {
+                    dst == Ok(v as $to)
+                }
             }
 
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa {:?}", err)
+                Err(err) => panic!("qa1 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `approx_as` (positive only) destination value computed using `as`.
     (@ $from:ty, $to:ty=> qa: +; $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -374,12 +418,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa {:?}", err)
+                Err(err) => panic!("qa2 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `approx_as` (may overflow); destination value computed using `as`
     (@ $from:ty, $to:ty=> qa: +$max:ty=> $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -387,7 +432,7 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
-                if !(v <= <$max>::max_value() as $from) {
+                if !(v <= <$max>::MAX as $from) {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -397,12 +442,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa {:?}", err)
+                Err(err) => panic!("qa3 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `approx_as` (may over/overflow bound); destination value computed using `as`
     (@ $from:ty, $to:ty=> qa: $bound:ty=> $($tail:tt)*) => {
         {
             extern crate quickcheck;
@@ -410,9 +456,14 @@ macro_rules! check {
 
             fn property(v: $from) -> bool {
                 let dst: Result<$to, conv2::FloatError<_>> = v.approx_as().map_err(From::from);
-                if !(<$bound>::min_value() as $from <= v) {
+                if util::is_nan(v) {
+                    // float NaN -> integer is Err; f64::NAN -> f32::NAN.
+                    dst.is_err() || util::is_nan(dst)
+                } else if is_infinite!(v, $from) && dst.is_ok() {
+                    dst == Ok(v as $to)
+                } else if !(<$bound>::MIN as $from <= v) {
                     dst == Err(conv2::FloatError::NegOverflow(v))
-                } else if !(v <= <$bound>::max_value() as $from) {
+                } else if !(v <= <$bound>::MAX as $from) {
                     dst == Err(conv2::FloatError::PosOverflow(v))
                 } else {
                     dst == Ok(v as $to)
@@ -422,12 +473,13 @@ macro_rules! check {
             let mut qc = quickcheck::QuickCheck::new();
             match qc.quicktest(property as fn($from) -> bool) {
                 Ok(_) => (),
-                Err(err) => panic!("qa {:?}", err)
+                Err(err) => panic!("qa4 {:?}", err)
             }
         }
         check!(@ $from, $to=> $($tail)*);
     };
 
+    // Quickcheck using `approx_as` with wrapping; destination value computed using `as`
     (@ $from:ty, $to:ty=> qaW: *; $($tail:tt)*) => {
         {
             extern crate quickcheck;

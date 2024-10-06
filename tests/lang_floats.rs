@@ -51,6 +51,14 @@ fn test_f64_to_int() {
 
 #[test]
 fn test_f64() {
-    check!(f64, f32=> fidenta; qa: *;);
+    use conv2::RangeError::NegOverflow as RU;
+    use conv2::RangeError::PosOverflow as RO;
+
+    // A value just barely too negative for an f32.
+    const F32UNDER: f64 = f32::MIN as f64 - 1e23;
+    // A value just barely too positive for an f32.
+    const F32OVER: f64 = f32::MAX as f64 + 1e23;
+
+    check!(f64, f32=> fidenta; qa: f32=>  a: F32UNDER, !RU; a: F32OVER, !RO;);
     check!(f64, f64=> fident; qv: *;);
 }
