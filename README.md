@@ -24,7 +24,7 @@ allowing code to react to failed conversions as appropriate.
 
 ## Compatibility
 
-`conv2` is compatible with Rust 1.56 and higher.
+`conv2` is compatible with Rust 1.61 and higher.
 
 # Overview
 
