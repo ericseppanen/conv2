@@ -395,7 +395,6 @@ mod lang_ints {
     num_conv! { usize=> n-isize }
 }
 
-#[cfg(feature = "std")]
 mod lang_floats {
     use crate::errors::{NoError, RangeError};
     use crate::ValueFrom;
@@ -440,7 +439,6 @@ mod lang_floats {
     }
 }
 
-#[cfg(feature = "std")]
 mod lang_int_to_float {
     num_conv! { i8=>  w f32, w f64 }
     num_conv! { i16=> w f32, w f64 }
@@ -458,7 +456,6 @@ mod lang_int_to_float {
     #[32] w f64, #[64] nf [, 9_007_199_254_740_992] f64 }
 }
 
-#[cfg(feature = "std")]
 mod lang_float_to_int {
     // We use explicit ranges on narrowing float-to-int conversions because it
     // *turns out* that just because you can cast an integer to a float, this

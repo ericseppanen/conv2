@@ -332,7 +332,6 @@ fn test_usize() {
     }
 }
 
-#[cfg(feature = "std")]
 #[test]
 fn test_i_to_f() {
     check!(i8,  f32=> sident; qv: *; qa: *);

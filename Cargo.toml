@@ -10,12 +10,8 @@ keywords = ["from", "into", "conversion", "approximation"]
 edition = "2021"
 rust-version = "1.56"
 
-[features]
-default = ["std"]
-std = ["custom_derive/std"]
-
 [dependencies]
-custom_derive = { version = "0.1.5", default-features = false }
+thiserror = "1.0.64"
 
 [dev-dependencies]
 quickcheck = { version = "1.0.3", default-features = false }

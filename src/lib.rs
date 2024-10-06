@@ -197,24 +197,11 @@
 #![deny(missing_docs)]
 #![allow(clippy::neg_cmp_op_on_partial_ord)]
 
-#[macro_use]
-extern crate custom_derive;
-
 pub use crate::errors::{
     FloatError, GeneralError, GeneralErrorKind, NegOverflow, NoError, PosOverflow, RangeError,
     RangeErrorKind, Saturate, Unrepresentable, UnwrapOk, UnwrapOrInf, UnwrapOrInvalid,
     UnwrapOrSaturate,
 };
-
-#[cfg(not(feature = "std"))]
-/// A conversion error. Corresponds to std::error:Error.
-pub trait Error: core::fmt::Debug + core::fmt::Display + core::any::Any {
-    /// A short description of the error
-    fn description(&self) -> &str;
-}
-
-#[cfg(feature = "std")]
-pub use std::error::Error;
 
 /// Publicly re-exports the most generally useful set of items.
 ///
@@ -289,7 +276,7 @@ where
     Scheme: ApproxScheme,
 {
     /// The error type produced by a failed conversion.
-    type Err: Error;
+    type Err: std::error::Error;
 
     /// Convert the given value into an approximately equivalent representation.
     fn approx_from(src: Src) -> Result<Self, Self::Err>;
@@ -314,7 +301,7 @@ where
     Scheme: ApproxScheme,
 {
     /// The error type produced by a failed conversion.
-    type Err: Error;
+    type Err: std::error::Error;
 
     /// Convert the subject into an approximately equivalent representation.
     fn approx_into(self) -> Result<Dst, Self::Err>;
@@ -386,7 +373,7 @@ impl ApproxScheme for RoundToZero {}
 /// being "round-tripped" exactly, or an error being produced.
 pub trait ValueFrom<Src>: Sized {
     /// The error type produced by a failed conversion.
-    type Err: Error;
+    type Err: std::error::Error;
 
     /// Convert the given value into an exactly equivalent representation.
     fn value_from(src: Src) -> Result<Self, Self::Err>;
@@ -405,7 +392,7 @@ impl<Src> ValueFrom<Src> for Src {
 /// constraints, but prefer *implementing* `ValueFrom`.
 pub trait ValueInto<Dst> {
     /// The error type produced by a failed conversion.
-    type Err: Error;
+    type Err: std::error::Error;
 
     /// Convert the subject into an exactly equivalent representation.
     fn value_into(self) -> Result<Dst, Self::Err>;
