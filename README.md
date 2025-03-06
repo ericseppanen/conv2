@@ -1,7 +1,7 @@
 
 `conv2` is a fork of [`conv`](https://github.com/DanielKeep/rust-conv/),
-written by Daniel Keep. It's in the progress of being updated to modern
-idiomatic Rust.
+written by Daniel Keep. It has been updated to modern idiomatic rust
+and modified for better compatibility with the current standard library.
 
 <!-- cargo-sync-readme start -->
 
