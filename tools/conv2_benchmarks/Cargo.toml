@@ -1,0 +1,16 @@
+[package]
+name = "conv2_benchmarks"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+conv2 = { path = "../.." }
+num-traits = "0.2.19"
+rand = "0.9.0"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "float_bench"
+harness = false
