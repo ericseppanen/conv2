@@ -1,6 +1,6 @@
 [package]
 name = "conv2"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Daniel Keep <daniel.keep@gmail.com>", "Eric Seppanen <eds@reric.net>"]
 description = "This crate provides a number of conversion traits with more specific semantics than those provided by 'as' or 'From'/'Into'."
 repository = "https://github.com/ericseppanen/conv2"
