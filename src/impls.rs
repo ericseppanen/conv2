@@ -127,7 +127,7 @@ macro_rules! approx_range_no_nan {
                     if !(approx <= $max) {
                         return Err(crate::errors::FloatError::PosOverflow(src));
                     }
-                    Ok(approx as $dst)
+                    Ok(unsafe { approx.to_int_unchecked::<$dst>() })
                 }
             }
         }
