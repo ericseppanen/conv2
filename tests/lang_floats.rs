@@ -62,3 +62,40 @@ fn test_f64() {
     check!(f64, f32=> fidenta; qa: f32=>  a: F32UNDER, !RU; a: F32OVER, !RO;);
     check!(f64, f64=> fident; qv: *;);
 }
+
+#[test]
+fn test_rounding() {
+    use conv2::{RoundToNearest, RoundToNegInf, RoundToPosInf, RoundToZero};
+
+    assert_eq!((8.5f32).approx_as::<u8>(), Ok(8));
+    assert_eq!((8.5f32).approx_as_by::<u8, RoundToZero>(), Ok(8));
+    assert_eq!((8.5f32).approx_as_by::<u8, RoundToNegInf>(), Ok(8));
+    assert_eq!((8.5f32).approx_as_by::<u8, RoundToPosInf>(), Ok(9));
+    assert_eq!((8.5f32).approx_as_by::<u8, RoundToNearest>(), Ok(9));
+
+    assert_eq!((-8.5f32).approx_as::<i8>(), Ok(-8));
+    assert_eq!((-8.5f32).approx_as_by::<i8, RoundToZero>(), Ok(-8));
+    assert_eq!((-8.5f32).approx_as_by::<i8, RoundToNegInf>(), Ok(-9));
+    assert_eq!((-8.5f32).approx_as_by::<i8, RoundToPosInf>(), Ok(-8));
+    assert_eq!((-8.5f32).approx_as_by::<i8, RoundToNearest>(), Ok(-9));
+
+    // When converting float to int, it's possible that different rounding modes
+    // will cause the same input to overflow the output type.
+
+    // This is just to verify that DefaultApprox rounds toward zero, because
+    // this means that it's incorrect because it tries to do the rounding
+    // after the bounds check.
+    assert_eq!((255.5f32).approx_as::<u16>(), Ok(255)); // FIXME: delete this once bug is fixed.
+
+    //assert_eq!((255.5f32).approx_as::<u8>(), Ok(255)); // FIXME: incorrect?
+    assert_eq!((255.5f32).approx_as_by::<u8, RoundToZero>(), Ok(255));
+    assert_eq!((255.5f32).approx_as_by::<u8, RoundToNegInf>(), Ok(255));
+    assert_eq!(
+        (255.5f32).approx_as_by::<u8, RoundToPosInf>(),
+        Err(FloatError::PosOverflow(255.5))
+    );
+    assert_eq!(
+        (255.5f32).approx_as_by::<u8, RoundToNearest>(),
+        Err(FloatError::PosOverflow(255.5))
+    );
+}
