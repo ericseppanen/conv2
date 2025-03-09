@@ -415,7 +415,7 @@ where
 /// of the type parameter (on the trait itself), it is cumbersome to specify
 /// the destination type. A similar problem exists for approximation schemes.
 ///
-/// See also the [`ConvAsUtil`](./trait.ConvAsUtil.html) trait.
+/// See also the [`ConvAsUtil`] trait.
 ///
 /// > **Note**: There appears to be a bug in `rustdoc`'s output. This trait is
 /// > implemented *for all* types, though the methods are only available for
@@ -474,7 +474,7 @@ impl<T> ConvUtil for T {}
 ///
 /// The destination type is inferred from context.
 ///
-/// See also the [`ConvUtil`](./trait.ConvUtil.html) trait.
+/// See also the [`ConvUtil`] trait.
 ///
 /// > **Note**: There appears to be a bug in `rustdoc`'s output. This trait is
 /// > implemented *for all* types, though the methods are only available for
