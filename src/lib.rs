@@ -195,7 +195,6 @@
 //! ```
 
 #![deny(missing_docs)]
-#![allow(clippy::neg_cmp_op_on_partial_ord)]
 
 pub use crate::errors::{
     FloatError, GeneralError, GeneralErrorKind, NegOverflow, NoError, PosOverflow, RangeError,
