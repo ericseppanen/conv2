@@ -91,11 +91,15 @@ macro_rules! approx_z_up {
     };
 }
 
+// Perform floating-point to integer conversions.
+// Uses the destination type's MIN and MAX values as the range limits.
 macro_rules! approx_dmin_to_dmax_no_nan {
+    // No approximation method was specified; use an identity closure.
     (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty) => {
         approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, $scheme, approx: |s| s }
     };
 
+    // With an approximation closure.
     (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
         approx_range_no_nan! {
             ($($attrs)*), $src,
@@ -106,10 +110,13 @@ macro_rules! approx_dmin_to_dmax_no_nan {
 }
 
 macro_rules! approx_range_no_nan {
+
+    // No approximation method was specified; use an identity closure.
     (($($attrs:tt)*), $src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty) => {
         approx_range_no_nan! { ($($attrs)*), $src, $dst,  [$min, $max], $scheme, approx: |s| s }
     };
 
+    // With an approximation closure.
     (($($attrs:tt)*), $src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
         as_item! {
             $($attrs)*
