@@ -459,24 +459,63 @@ mod lang_float_to_int {
     // kinda *totally broken* for narrowing conversions.
     //
     // *Yeah.*  That's floating point for you!
-    num_conv! { f32=> fan i8, fan i16,
-    fan [-2.1474836e9, 2.1474835e9] i32,
-    fan [-9.223372e18, 9.2233715e18] i64 }
-    num_conv! { f32=> fan u8, fan u16,
-    fan [0.0, 4.294967e9] u32,
-    fan [0.0, 1.8446743e19] u64 }
-    num_conv! { f32=>
-    #[32] fan [-2.1474836e9, 2.1474835e9] isize,
-    #[32] fan [0.0, 4.294967e9] usize,
-    #[64] fan [-9.223372e18, 9.2233715e18] isize,
-    #[64] fan [0.0, 1.8446743e19] usize }
+    num_conv! {
+        f32=>
+            fan i8,
+            fan i16,
+            fan [-2.1474836e9, 2.1474835e9] i32,
+            fan [-9.223372e18, 9.2233715e18] i64
+    }
 
-    num_conv! { f64=> fan i8, fan i16, fan i32,
-    fan [-9.223372036854776e18, 9.223372036854775e18] i64 }
-    num_conv! { f64=> fan u8, fan u16, fan u32,
-    fan [0.0, 1.844674407370955e19] u64 }
-    num_conv! { f64=>
-    #[32] fan isize, #[32] fan usize,
-    #[64] fan [-9.223372036854776e18, 9.223372036854775e18] isize,
-    #[64] fan [0.0, 1.844674407370955e19] usize }
+    num_conv! {
+        f32=>
+            fan u8,
+            fan u16,
+            fan [0.0, 4.294967e9] u32,
+            fan [0.0, 1.8446743e19] u64
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    num_conv! {
+        f32=>
+            fan [-2.1474836e9, 2.1474835e9] isize,
+            fan [0.0, 4.294967e9] usize,
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    num_conv! {
+        f32=>
+            fan [-9.223372e18, 9.2233715e18] isize,
+            fan [0.0, 1.8446743e19] usize
+    }
+
+    num_conv! {
+        f64=>
+            fan i8,
+            fan i16,
+            fan i32,
+            fan [-9.223372036854776e18, 9.223372036854775e18] i64
+    }
+
+    num_conv! {
+        f64=>
+            fan u8,
+            fan u16,
+            fan u32,
+            fan [0.0, 1.844674407370955e19] u64
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    num_conv! {
+        f64=>
+            fan isize,
+            fan usize,
+    }
+
+    #[cfg(target_pointer_width = "64")]
+    num_conv! {
+        f64=>
+            fan [-9.223372036854776e18, 9.223372036854775e18] isize,
+            fan [0.0, 1.844674407370955e19] usize
+    }
 }
