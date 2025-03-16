@@ -91,35 +91,10 @@ macro_rules! approx_z_up {
     };
 }
 
-// Perform floating-point to integer conversions.
-// Uses the destination type's MIN and MAX values as the range limits.
-macro_rules! approx_dmin_to_dmax_no_nan {
-    // No approximation method was specified; use an identity closure.
-    (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty) => {
-        approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, $scheme, approx: |s| s }
-    };
-
-    // With an approximation closure.
-    (($($attrs:tt)*), $src:ty, $dst:ident, $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
-        approx_range_no_nan! {
-            ($($attrs)*), $src,
-            $dst, [$dst::MIN as $src, $dst::MAX as $src],
-            $scheme, approx: |$src_name| $conv
-        }
-    };
-}
-
-macro_rules! approx_range_no_nan {
-
-    // No approximation method was specified; use an identity closure.
-    (($($attrs:tt)*), $src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty) => {
-        approx_range_no_nan! { ($($attrs)*), $src, $dst,  [$min, $max], $scheme, approx: |s| s }
-    };
-
-    // With an approximation closure.
-    (($($attrs:tt)*), $src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
+macro_rules! impl_float2int_round {
+    // A fallible float->int conversion, with an explicit rounding step.
+    ($src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
         as_item! {
-            $($attrs)*
             impl crate::ApproxFrom<$src, $scheme> for $dst {
                 type Err = crate::errors::FloatError<$src>;
                 #[inline]
@@ -329,40 +304,32 @@ macro_rules! num_conv {
         num_conv! { @ $src=> $($tail)* }
     };
 
-    // Approximately narrowing a floating point value *into* a type where the source value is constrained by the given range of values.
-    (@ $src:ty=> ($($attrs:tt)*) fan [$min:expr, $max:expr] $dst:ident, $($tail:tt)*) => {
-        as_item! {
-            approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                crate::DefaultApprox }
-            approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                crate::RoundToNearest, approx: |s| s.round() }
-            approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                crate::RoundToNegInf, approx: |s| s.floor() }
-            approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                crate::RoundToPosInf, approx: |s| s.ceil() }
-            approx_range_no_nan! { ($($attrs)*), $src, $dst, [$min, $max],
-                crate::RoundToZero, approx: |s| s.trunc() }
-        }
-        num_conv! { @ $src=> $($tail)* }
-    };
-
-    (@ $src:ty=> ($($attrs:tt)*) fan $dst:ident, $($tail:tt)*) => {
-        as_item! {
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::DefaultApprox }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToNearest,
-                approx: |s| s.round() }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToNegInf,
-                approx: |s| s.floor() }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToPosInf,
-                approx: |s| s.ceil() }
-            approx_dmin_to_dmax_no_nan! { ($($attrs)*), $src, $dst, crate::RoundToZero,
-                approx: |s| s.trunc() }
-        }
-        num_conv! { @ $src=> $($tail)* }
-    };
-
     ($src:ty=> $($tail:tt)*) => {
         num_conv! { @ $src=> $($tail)*, }
+    };
+}
+
+macro_rules! num_conv_float2int {
+    // Convert float->int, using explicit min and max range limits.
+    ($src:ty => [$min:expr, $max:expr] $dst:ident) => {
+        as_item! {
+            impl_float2int_round! { $src, $dst, [$min, $max], crate::DefaultApprox, approx: |s| s }
+            impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToNearest, approx: |s| s.round() }
+            impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToNegInf, approx: |s| s.floor() }
+            impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToPosInf, approx: |s| s.ceil() }
+            impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToZero, approx: |s| s.trunc() }
+        }
+    };
+
+    // Convert float->int, using the destination type's MIN and MAX as the allowed range.
+    ($src:ty => $dst:ident) => {
+        as_item! {
+            impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::DefaultApprox, approx: |s| s }
+            impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToNearest, approx: |s| s.round() }
+            impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToNegInf, approx: |s| s.floor() }
+            impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToPosInf, approx: |s| s.ceil() }
+            impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToZero, approx: |s| s.trunc() }
+        }
     };
 }
 
@@ -452,70 +419,52 @@ mod lang_int_to_float {
 }
 
 mod lang_float_to_int {
-    // We use explicit ranges on narrowing float-to-int conversions because it
-    // *turns out* that just because you can cast an integer to a float, this
-    // *does not* mean you can cast it back and get the original input. The
-    // non-explicit-range implementation of `fan` *depends* on this, so it was
-    // kinda *totally broken* for narrowing conversions.
-    //
-    // *Yeah.*  That's floating point for you!
-    num_conv! {
-        f32=>
-            fan i8,
-            fan i16,
-            fan [-2.1474836e9, 2.1474835e9] i32,
-            fan [-9.223372e18, 9.2233715e18] i64
-    }
+    // Some limits need to be specified as floating point values, because it's
+    // possible for an integer limit to be imprecise once cast to floating point.
+    // This could lead to incorrect results.
 
-    num_conv! {
-        f32=>
-            fan u8,
-            fan u16,
-            fan [0.0, 4.294967e9] u32,
-            fan [0.0, 1.8446743e19] u64
-    }
+    num_conv_float2int!(f32 => i8);
+    num_conv_float2int!(f32 => i16);
+    num_conv_float2int!(f32 => [-2.1474836e9, 2.1474835e9] i32);
+    num_conv_float2int!(f32 => [-9.223372e18, 9.2233715e18] i64);
+
+    num_conv_float2int!(f32 => u8);
+    num_conv_float2int!(f32 => u16);
+    num_conv_float2int!(f32 => [0.0, 4.294967e9] u32);
+    num_conv_float2int!(f32 => [0.0, 1.8446743e19] u64);
 
     #[cfg(target_pointer_width = "32")]
-    num_conv! {
-        f32=>
-            fan [-2.1474836e9, 2.1474835e9] isize,
-            fan [0.0, 4.294967e9] usize,
+    mod size32 {
+        num_conv_float2int!(f32 => [-2.1474836e9, 2.1474835e9] isize);
+        num_conv_float2int!(f32 => [0.0, 4.294967e9] usize);
     }
 
     #[cfg(target_pointer_width = "64")]
-    num_conv! {
-        f32=>
-            fan [-9.223372e18, 9.2233715e18] isize,
-            fan [0.0, 1.8446743e19] usize
+    mod size64 {
+        num_conv_float2int!(f32 => [-9.223372e18, 9.2233715e18] isize);
+        num_conv_float2int!(f32 => [0.0, 1.8446743e19] usize);
     }
 
-    num_conv! {
-        f64=>
-            fan i8,
-            fan i16,
-            fan i32,
-            fan [-9.223372036854776e18, 9.223372036854775e18] i64
-    }
+    num_conv_float2int!(f64 => i8);
+    num_conv_float2int!(f64 => i16);
+    num_conv_float2int!(f64 => i32);
+    num_conv_float2int!(f64 => [-9.223372036854776e18, 9.223372036854775e18] i64);
 
-    num_conv! {
-        f64=>
-            fan u8,
-            fan u16,
-            fan u32,
-            fan [0.0, 1.844674407370955e19] u64
-    }
+    num_conv_float2int!(f64 => u8);
+    num_conv_float2int!(f64 => u16);
+    num_conv_float2int!(f64 => u32);
+    num_conv_float2int!(f64 => [0.0, 1.844674407370955e19] u64);
 
+    // FIXME: merge the size-width modules
     #[cfg(target_pointer_width = "32")]
-    num_conv! {
-        f64=>
-            fan isize,
-            fan usize,
+    mod size32b {
+        num_conv_float2int!(f64 => isize);
+        num_conv_float2int!(f64 => usize);
     }
 
     #[cfg(target_pointer_width = "64")]
-    num_conv! {
-        f64=>
-            fan [-9.223372036854776e18, 9.223372036854775e18] isize,
-            fan [0.0, 1.844674407370955e19] usize
+    mod size64b {
+        num_conv_float2int!(f64 => [-9.223372036854776e18, 9.223372036854775e18] isize);
+        num_conv_float2int!(f64 => [0.0, 1.844674407370955e19] usize);
     }
 }
