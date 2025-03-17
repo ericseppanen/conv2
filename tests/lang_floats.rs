@@ -82,12 +82,23 @@ fn test_rounding() {
     // When converting float to int, it's possible that different rounding modes
     // will cause the same input to overflow the output type.
 
-    // This is just to verify that DefaultApprox rounds toward zero, because
-    // this means that it's incorrect because it tries to do the rounding
-    // after the bounds check.
-    assert_eq!((255.5f32).approx_as::<u16>(), Ok(255)); // FIXME: delete this once bug is fixed.
+    // Verify that DefaultApprox rounds toward zero, and allows values
+    // that start out 0.9 beyond the maximum allowed.
+    // This can't be done for some combinations, e.g. f32->i32 because
+    // there are no f32 values with a fractional part that exceed the
+    // min/max i32 value.
+    assert_eq!((127.9f32).approx_as::<i8>(), Ok(127));
+    assert_eq!((-128.9f32).approx_as::<i8>(), Ok(-128));
+    assert_eq!((255.9f32).approx_as::<u8>(), Ok(255));
+    assert_eq!((32767.9f32).approx_as::<i16>(), Ok(32767));
+    assert_eq!((-32768.9f32).approx_as::<i16>(), Ok(-32768));
+    assert_eq!((65535.9f32).approx_as::<u16>(), Ok(65535));
 
-    //assert_eq!((255.5f32).approx_as::<u8>(), Ok(255)); // FIXME: incorrect?
+    assert_eq!((2147483647.9f64).approx_as::<i32>(), Ok(2147483647));
+    assert_eq!((-2147483648.9f64).approx_as::<i32>(), Ok(-2147483648));
+    assert_eq!((4294967295.9f64).approx_as::<u32>(), Ok(4294967295));
+
+    // Test the other rounding modes.
     assert_eq!((255.5f32).approx_as_by::<u8, RoundToZero>(), Ok(255));
     assert_eq!((255.5f32).approx_as_by::<u8, RoundToNegInf>(), Ok(255));
     assert_eq!(
@@ -98,4 +109,95 @@ fn test_rounding() {
         (255.5f32).approx_as_by::<u8, RoundToNearest>(),
         Err(FloatError::PosOverflow(255.5))
     );
+}
+
+/// Increment an f32 by the minimum possible step.
+///
+/// The `step` input should be 1.0 or -1.0; we will increase
+/// it until it actually changes the value.
+fn step(x: f32, mut step: f32) -> f32 {
+    let mut y = x;
+    loop {
+        y += step;
+        if y != x {
+            return y;
+        }
+        step *= 2.0;
+    }
+}
+
+/// Increment an f32 by the minimum possible step.
+///
+/// The `step` input should be 1.0 or -1.0; we will increase
+/// it until it actually changes the value.
+fn step64(x: f64, mut step: f64) -> f64 {
+    let mut y = x;
+    loop {
+        y += step;
+        if y != x {
+            return y;
+        }
+        step *= 2.0;
+    }
+}
+
+#[test]
+fn test_limits() {
+    use conv2::{MAX_F32_I32, MAX_F32_I64, MIN_F32_I32, MIN_F32_I64};
+
+    // Verify that the min and max values we use are the actual limits:
+    // they succeed, and anything further from zero will fail.
+    // Additionally, verify that anything further away will exceed
+    // integer limits for that type.
+
+    // f32 -> i32/u32
+
+    assert_eq!(MAX_F32_I32.approx_as::<i32>(), Ok(2147483520));
+    assert!(step(MAX_F32_I32, 1.0).approx_as::<i32>().is_err());
+    assert!(step(MAX_F32_I32, 1.0) as i64 > i32::MAX as i64);
+
+    assert_eq!(MIN_F32_I32.approx_as::<i32>(), Ok(-2147483648));
+    assert!(step(MIN_F32_I32, -1.0).approx_as::<i32>().is_err());
+    assert!((step(MIN_F32_I32, -1.0) as i64) < i32::MIN as i64);
+
+    assert_eq!(MAX_F32_U32.approx_as::<u32>(), Ok(4294967040));
+    assert!(step(MAX_F32_U32, 1.0).approx_as::<u32>().is_err());
+    assert!(step(MAX_F32_U32, 1.0) as u64 > u32::MAX as u64);
+
+    assert_eq!(0.0f32.approx_as::<u32>(), Ok(0));
+    assert_eq!((-0.0f32).approx_as::<u32>(), Ok(0));
+
+    // f32 -> i64/u64
+
+    assert_eq!(MAX_F32_I64.approx_as::<i64>(), Ok(9223371487098961920));
+    assert!(step(MAX_F32_I64, 1.0).approx_as::<i64>().is_err());
+    assert!(step(MAX_F32_I64, 1.0) as i128 > i64::MAX as i128);
+
+    assert_eq!(MIN_F32_I64.approx_as::<i64>(), Ok(-9223372036854775808));
+    assert!(step(MIN_F32_I64, -1.0).approx_as::<i64>().is_err());
+    assert!((step(MIN_F32_I64, -1.0) as i128) < i64::MIN as i128);
+
+    assert_eq!(MAX_F32_U64.approx_as::<u64>(), Ok(18446742974197923840));
+    assert!(step(MAX_F32_U64, 1.0).approx_as::<u64>().is_err());
+    assert!(step(MAX_F32_U64, 1.0) as u128 > u64::MAX as u128);
+
+    assert_eq!(0.0f32.approx_as::<u64>(), Ok(0));
+    assert_eq!((-0.0f32).approx_as::<u64>(), Ok(0));
+
+    // f64 -> i64/u64
+
+    assert_eq!(MAX_F64_I64.approx_as::<i64>(), Ok(9223372036854774784));
+    assert!(step64(MAX_F64_I64, 1.0).approx_as::<i64>().is_err());
+    assert!(step64(MAX_F64_I64, 1.0) as i128 > i64::MAX as i128);
+
+    assert_eq!(MIN_F64_I64.approx_as::<i64>(), Ok(-9223372036854775808));
+    assert!(step64(MIN_F64_I64, -1.0).approx_as::<i64>().is_err());
+    assert!((step64(MIN_F64_I64, -1.0) as i128) < i64::MIN as i128);
+
+    assert_eq!(MAX_F64_U64.approx_as::<u64>(), Ok(18446744073709549568));
+    assert!(step64(MAX_F64_U64, 1.0).approx_as::<u64>().is_err());
+    assert!(step64(MAX_F64_U64, 1.0) as u128 > u64::MAX as u128);
+
+    assert_eq!(0.0f32.approx_as::<u64>(), Ok(0));
+    assert_eq!((-0.0f32).approx_as::<u64>(), Ok(0));
 }
