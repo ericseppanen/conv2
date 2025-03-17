@@ -54,5 +54,5 @@ fn f32_to_i32(float: f32) -> i32 {
 }
 
 pub fn asm_f32_i32(input: Vec<f32>) -> Vec<i32> {
-    input.into_iter().map(|input| f32_to_i32(input)).collect()
+    input.into_iter().map(f32_to_i32).collect()
 }

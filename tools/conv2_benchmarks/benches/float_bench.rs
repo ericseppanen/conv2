@@ -1,5 +1,5 @@
 use conv2_benchmarks::{asm_f32_i32, conv2_f32_u32, num_f32_u32};
-use criterion::{black_box, criterion_group, criterion_main, BatchSize, Criterion};
+use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 
 fn make_input() -> Vec<f32> {
     let mut input = Vec::<f32>::new();
