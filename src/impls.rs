@@ -116,6 +116,32 @@ macro_rules! impl_float2int_round {
     };
 }
 
+macro_rules! impl_float2int_trunc {
+    // A fallible float->int conversion, with an implicit truncation.
+    // Limits are specified as the first value that fails, rather than
+    // the first value that succeeds.
+    ($src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty) => {
+        as_item! {
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::FloatError<$src>;
+                #[inline]
+                fn approx_from(src: $src) -> Result<$dst, Self::Err> {
+                    if src.is_nan() {
+                        return Err(crate::errors::FloatError::NotANumber(src));
+                    }
+                    if src <= $min  {
+                        return Err(crate::errors::FloatError::NegOverflow(src));
+                    }
+                    if src >= $max {
+                        return Err(crate::errors::FloatError::PosOverflow(src));
+                    }
+                    Ok(unsafe { src.to_int_unchecked::<$dst>() })
+                }
+            }
+        }
+    };
+}
+
 macro_rules! num_conv {
     (@ $src:ty=> $(,)*) => {};
 
@@ -324,11 +350,11 @@ macro_rules! num_conv_float2int {
     // Convert float->int, using the destination type's MIN and MAX as the allowed range.
     ($src:ty => $dst:ident) => {
         as_item! {
-            impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::DefaultApprox, approx: |s| s }
+            impl_float2int_trunc! { $src, $dst, [$dst::MIN as $src - 1.0, $dst::MAX as $src + 1.0], crate::DefaultApprox }
+            impl_float2int_trunc! { $src, $dst, [$dst::MIN as $src - 1.0, $dst::MAX as $src + 1.0], crate::RoundToZero }
             impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToNearest, approx: |s| s.round() }
             impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToNegInf, approx: |s| s.floor() }
             impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToPosInf, approx: |s| s.ceil() }
-            impl_float2int_round! { $src, $dst, [$dst::MIN as $src, $dst::MAX as $src], crate::RoundToZero, approx: |s| s.trunc() }
         }
     };
 }
