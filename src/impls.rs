@@ -419,52 +419,45 @@ mod lang_int_to_float {
 }
 
 mod lang_float_to_int {
+
     // Some limits need to be specified as floating point values, because it's
     // possible for an integer limit to be imprecise once cast to floating point.
-    // This could lead to incorrect results.
+    // Some of these values are equal to the integer MIN and MAX values cast to
+    // floats, and some of them are not, because the cast-to-float sometimes
+    // rounds up past the value that can safely be cast back to integer.
 
     num_conv_float2int!(f32 => i8);
     num_conv_float2int!(f32 => i16);
-    num_conv_float2int!(f32 => [-2.1474836e9, 2.1474835e9] i32);
-    num_conv_float2int!(f32 => [-9.223372e18, 9.2233715e18] i64);
+    num_conv_float2int!(f32 => [crate::MIN_F32_I32, crate::MAX_F32_I32] i32);
+    num_conv_float2int!(f32 => [crate::MIN_F32_I64, crate::MAX_F32_I64] i64);
 
     num_conv_float2int!(f32 => u8);
     num_conv_float2int!(f32 => u16);
-    num_conv_float2int!(f32 => [0.0, 4.294967e9] u32);
-    num_conv_float2int!(f32 => [0.0, 1.8446743e19] u64);
+    num_conv_float2int!(f32 => [0.0, crate::MAX_F32_U32] u32);
+    num_conv_float2int!(f32 => [0.0, crate::MAX_F32_U64] u64);
 
-    #[cfg(target_pointer_width = "32")]
-    mod size32 {
-        num_conv_float2int!(f32 => [-2.1474836e9, 2.1474835e9] isize);
-        num_conv_float2int!(f32 => [0.0, 4.294967e9] usize);
-    }
-
-    #[cfg(target_pointer_width = "64")]
-    mod size64 {
-        num_conv_float2int!(f32 => [-9.223372e18, 9.2233715e18] isize);
-        num_conv_float2int!(f32 => [0.0, 1.8446743e19] usize);
-    }
+    num_conv_float2int!(f32 => [crate::MIN_F32_ISIZE, crate::MAX_F32_ISIZE] isize);
+    num_conv_float2int!(f32 => [0.0, crate::MAX_F32_USIZE] usize);
 
     num_conv_float2int!(f64 => i8);
     num_conv_float2int!(f64 => i16);
     num_conv_float2int!(f64 => i32);
-    num_conv_float2int!(f64 => [-9.223372036854776e18, 9.223372036854775e18] i64);
+    num_conv_float2int!(f64 => [crate::MIN_F64_I64, crate::MAX_F64_I64] i64);
 
     num_conv_float2int!(f64 => u8);
     num_conv_float2int!(f64 => u16);
     num_conv_float2int!(f64 => u32);
-    num_conv_float2int!(f64 => [0.0, 1.844674407370955e19] u64);
+    num_conv_float2int!(f64 => [0.0, crate::MAX_F64_U64] u64);
 
-    // FIXME: merge the size-width modules
     #[cfg(target_pointer_width = "32")]
-    mod size32b {
+    mod size32 {
         num_conv_float2int!(f64 => isize);
         num_conv_float2int!(f64 => usize);
     }
 
     #[cfg(target_pointer_width = "64")]
-    mod size64b {
-        num_conv_float2int!(f64 => [-9.223372036854776e18, 9.223372036854775e18] isize);
-        num_conv_float2int!(f64 => [0.0, 1.844674407370955e19] usize);
+    mod size64 {
+        num_conv_float2int!(f64 => [crate::MIN_F64_I64, crate::MAX_F64_I64] isize);
+        num_conv_float2int!(f64 => [0.0, crate::MAX_F64_U64] usize);
     }
 }
