@@ -91,8 +91,8 @@ macro_rules! approx_z_up {
     };
 }
 
+/// A fallible float->int conversion, with an explicit rounding step.
 macro_rules! impl_float2int_round {
-    // A fallible float->int conversion, with an explicit rounding step.
     ($src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty, approx: |$src_name:ident| $conv:expr) => {
         as_item! {
             impl crate::ApproxFrom<$src, $scheme> for $dst {
@@ -116,10 +116,40 @@ macro_rules! impl_float2int_round {
     };
 }
 
+/// A fallible float->int conversion, with an implicit truncation for large integers.
+///
+/// By "large integers" we mean those that won't have any fractional part in the
+/// floating point source value.
+///
+/// Limits are specified as the min/max values that succeed.
+macro_rules! impl_float2int_trunc_large {
+    ($src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty) => {
+        as_item! {
+            impl crate::ApproxFrom<$src, $scheme> for $dst {
+                type Err = crate::errors::FloatError<$src>;
+                #[inline]
+                fn approx_from(src: $src) -> Result<$dst, Self::Err> {
+                    if src.is_nan() {
+                        return Err(crate::errors::FloatError::NotANumber(src));
+                    }
+                    if src < $min  {
+                        return Err(crate::errors::FloatError::NegOverflow(src));
+                    }
+                    if src > $max {
+                        return Err(crate::errors::FloatError::PosOverflow(src));
+                    }
+                    Ok(unsafe { src.to_int_unchecked::<$dst>() })
+                }
+            }
+        }
+    };
+}
+
+/// A fallible float->int conversion, with an implicit truncation for small integers.
+///
+/// Limits are specified as the first value that fails, rather than
+/// the first value that succeeds.
 macro_rules! impl_float2int_trunc {
-    // A fallible float->int conversion, with an implicit truncation.
-    // Limits are specified as the first value that fails, rather than
-    // the first value that succeeds.
     ($src:ty, $dst:ident, [$min:expr, $max:expr], $scheme:ty) => {
         as_item! {
             impl crate::ApproxFrom<$src, $scheme> for $dst {
@@ -339,11 +369,11 @@ macro_rules! num_conv_float2int {
     // Convert float->int, using explicit min and max range limits.
     ($src:ty => [$min:expr, $max:expr] $dst:ident) => {
         as_item! {
-            impl_float2int_round! { $src, $dst, [$min, $max], crate::DefaultApprox, approx: |s| s }
+            impl_float2int_trunc_large! { $src, $dst, [$min, $max], crate::DefaultApprox }
+            impl_float2int_trunc_large! { $src, $dst, [$min, $max], crate::RoundToZero }
             impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToNearest, approx: |s| s.round() }
             impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToNegInf, approx: |s| s.floor() }
             impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToPosInf, approx: |s| s.ceil() }
-            impl_float2int_round! { $src, $dst, [$min, $max], crate::RoundToZero, approx: |s| s.trunc() }
         }
     };
 
